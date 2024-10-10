@@ -1,0 +1,7 @@
+name: HRCommunity
+version: '1.0-SNAPSHOT'
+main: kr.hwaryuh.community.Main
+api-version: '1.20'
+commands:
+  프로필:
+  친구:

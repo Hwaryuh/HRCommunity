@@ -1,0 +1,4 @@
+database:
+  url: "jdbc:mysql://localhost:3306/community_plugin"
+  username: "your_username"
+  password: "your_password"
