@@ -2,9 +2,12 @@ name: HRCommunity
 version: '0.1-SNAPSHOT'
 main: kr.hwaryuh.community.Main
 api-version: '1.20'
+author: useemeonascreen
+depend:
+  - MMOCore
+  - MythicLib
 commands:
   hcmu:
-
   프로필:
     aliases: vmfhvlf
   친구:
