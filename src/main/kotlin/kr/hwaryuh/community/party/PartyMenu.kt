@@ -1,8 +1,7 @@
-package kr.hwaryuh.community.service
+package kr.hwaryuh.community.party
 
 import kr.hwaryuh.community.Main
-import kr.hwaryuh.community.party.PartyInviteManager
-import kr.hwaryuh.community.party.PartyManager
+import kr.hwaryuh.community.profile.PreviousMenuType
 import net.Indyuce.mmocore.MMOCore
 import net.Indyuce.mmocore.api.player.PlayerData
 import net.Indyuce.mmocore.party.provided.Party
@@ -15,7 +14,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.Inventory
-import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 
@@ -115,6 +113,7 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
                     player.closeInventory()
                     PartyManager.leaveParty(playerData, holder.party)
                 }
+
                 in memberSlots -> {
                     val clickedItem = event.currentItem
                     when {
@@ -129,7 +128,7 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
                             if (targetPlayer != null) {
                                 if (event.isLeftClick) {
                                     player.closeInventory()
-                                    plugin.openProfileMenu(player, targetPlayer, true)
+                                    plugin.openProfileMenu(player, targetPlayer, true, PreviousMenuType.PARTY)
                                 } else if (event.isShiftClick && event.isRightClick && holder.party.owner == playerData && targetPlayer != player) {
                                     partyManager.kickFromParty(player, playerData, arrayOf("추방", targetPlayer.name))
                                     updatePartyMenuItems(event.inventory, holder.party, playerData)
@@ -139,12 +138,6 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
                     }
                 }
             }
-        }
-    }
-
-    private class PartyMenuHolder(val party: Party, val playerData: PlayerData) : InventoryHolder {
-        override fun getInventory(): Inventory {
-            throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
         }
     }
 }

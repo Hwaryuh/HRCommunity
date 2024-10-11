@@ -1,7 +1,6 @@
-package kr.hwaryuh.community.service
+package kr.hwaryuh.community.party
 
 import kr.hwaryuh.community.Main
-import kr.hwaryuh.community.party.PartyInviteManager
 import net.Indyuce.mmocore.api.player.PlayerData
 import net.Indyuce.mmocore.party.provided.Party
 import net.kyori.adventure.text.Component
@@ -85,7 +84,7 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
     fun onInventoryClick(event: InventoryClickEvent) {
         val holder = event.inventory.holder
         if (holder is InviteMenuHolder) {
-            event.isCancelled = true  // 모든 클릭 이벤트를 취소합니다.
+            event.isCancelled = true
             val player = event.whoClicked as? Player ?: return
             val playerData = PlayerData.get(player)
 

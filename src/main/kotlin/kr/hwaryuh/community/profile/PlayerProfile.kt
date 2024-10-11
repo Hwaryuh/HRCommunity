@@ -1,18 +1,19 @@
-package kr.hwaryuh.community.service
+package kr.hwaryuh.community.profile
 
 import kr.hwaryuh.community.Main
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
-import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import io.lumine.mythic.lib.api.item.NBTItem
+import org.bukkit.OfflinePlayer
+import org.bukkit.inventory.meta.SkullMeta
 
 class PlayerProfile(private val plugin: Main) {
 
-    fun createProfileInventory(viewer: Player, target: Player, fromMenu: Boolean): Inventory {
-        val inventory = Bukkit.createInventory(ProfileInventoryHolder(target, fromMenu), 54, "${target.name}의 프로필")
+    fun createProfileInventory(viewer: Player, target: Player, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
+        val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, "${target.name}의 프로필")
 
         setArmorSlots(inventory, target)
         setWeaponSlots(inventory, target)
@@ -37,6 +38,41 @@ class PlayerProfile(private val plugin: Main) {
 
         return inventory
     }
+
+    fun createOfflineProfileInventory(viewer: Player, target: OfflinePlayer, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
+        val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, "${target.name}의 프로필")
+
+        val infoItem = ItemStack(Material.PLAYER_HEAD)
+        val meta = infoItem.itemMeta as SkullMeta
+        meta.owningPlayer = target
+        meta.setDisplayName("§6${target.name}")
+        val lore = mutableListOf<String>()
+        lore.add("§7상태: §c오프라인")
+        meta.lore = lore
+        infoItem.itemMeta = meta
+        inventory.setItem(4, infoItem)
+
+        if (viewer.uniqueId != target.uniqueId) {
+            if (plugin.databaseManager.areFriends(viewer.uniqueId, target.uniqueId)) {
+                val removeFriendItem = removeFriendButton()
+                inventory.setItem(53, removeFriendItem)
+            } else if (plugin.databaseManager.hasFriendRequest(viewer.uniqueId, target.uniqueId)) {
+                val pendingRequestItem = pendingRequestIcon()
+                inventory.setItem(53, pendingRequestItem)
+            } else {
+                val addFriendItem = addFriendButton()
+                inventory.setItem(53, addFriendItem)
+            }
+        }
+
+        if (fromMenu) {
+            val backButton = backButton()
+            inventory.setItem(45, backButton)
+        }
+
+        return inventory
+    }
+
 
     private fun setArmorSlots(inventory: Inventory, player: Player) {
         val armorSlots = listOf(0, 9, 18, 27)
@@ -109,11 +145,5 @@ class PlayerProfile(private val plugin: Main) {
         meta?.setDisplayName("뒤로 가기")
         backButton.itemMeta = meta
         return backButton
-    }
-}
-
-class ProfileInventoryHolder(val target: Player, val fromMenu: Boolean) : InventoryHolder {
-    override fun getInventory(): Inventory {
-        throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
     }
 }

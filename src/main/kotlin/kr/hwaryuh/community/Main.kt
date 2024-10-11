@@ -2,14 +2,12 @@ package kr.hwaryuh.community
 
 import kr.hwaryuh.community.command.*
 import kr.hwaryuh.community.data.DatabaseManager
-import kr.hwaryuh.community.event.PlayerProfileEvent
-import kr.hwaryuh.community.party.PartyInviteManager
-import kr.hwaryuh.community.party.PartyListener
-import kr.hwaryuh.community.party.PartyManager
-import kr.hwaryuh.community.service.PartyMenu
-import kr.hwaryuh.community.service.FriendsList
-import kr.hwaryuh.community.service.PartyInviteMenu
-import kr.hwaryuh.community.service.PlayerProfile
+import kr.hwaryuh.community.friends.FriendsListMenu
+import kr.hwaryuh.community.party.*
+import kr.hwaryuh.community.profile.PlayerProfileListener
+import kr.hwaryuh.community.profile.PreviousMenuType
+import kr.hwaryuh.community.profile.PlayerProfile
+import org.bukkit.OfflinePlayer
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -17,8 +15,8 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
     lateinit var databaseManager: DatabaseManager
-    private lateinit var profileService: PlayerProfile
-    private lateinit var friendsList: FriendsList
+    lateinit var playerProfile: PlayerProfile
+    private lateinit var friendsListMenu: FriendsListMenu
     private lateinit var partyInviteManager: PartyInviteManager
     private lateinit var partyManager: PartyManager
     private lateinit var partyMenu: PartyMenu
@@ -28,15 +26,15 @@ class Main : JavaPlugin() {
         saveDefaultConfig()
 
         databaseManager = DatabaseManager(this)
-        profileService = PlayerProfile(this)
-        friendsList = FriendsList(this)
+        playerProfile = PlayerProfile(this)
+        friendsListMenu = FriendsListMenu(this)
         partyInviteManager = PartyInviteManager(this)
         partyManager = PartyManager(this, partyInviteManager)
         partyMenu = PartyMenu(this, partyManager, partyInviteManager)
         partyInviteMenu = PartyInviteMenu(this, partyInviteManager)
 
-        server.pluginManager.registerEvents(PlayerProfileEvent(this), this)
-        server.pluginManager.registerEvents(friendsList, this)
+        server.pluginManager.registerEvents(PlayerProfileListener(this), this)
+        server.pluginManager.registerEvents(friendsListMenu, this)
         server.pluginManager.registerEvents(PartyListener(this), this)
         server.pluginManager.registerEvents(partyMenu, this)
         server.pluginManager.registerEvents(partyInviteMenu, this)
@@ -54,15 +52,21 @@ class Main : JavaPlugin() {
     }
 
     override fun onDisable() {
+        // databaseManager.closeConnection()
     }
 
-    fun openProfileMenu(viewer: Player, target: Player, fromMenu: Boolean) {
-        val inventory = profileService.createProfileInventory(viewer, target, fromMenu)
+    fun openProfileMenu(viewer: Player, target: Player, fromMenu: Boolean, previousMenu: PreviousMenuType) {
+        val inventory = playerProfile.createProfileInventory(viewer, target, fromMenu, previousMenu)
+        viewer.openInventory(inventory)
+    }
+
+    fun openOfflineProfileMenu(viewer: Player, target: OfflinePlayer, fromMenu: Boolean, previousMenu: PreviousMenuType) {
+        val inventory = playerProfile.createOfflineProfileInventory(viewer, target, fromMenu, previousMenu)
         viewer.openInventory(inventory)
     }
 
     fun openFriendsList(player: Player) {
-        friendsList.open(player)
+        friendsListMenu.open(player)
     }
 
     fun <T : Any> getService(clazz: Class<T>): T? {

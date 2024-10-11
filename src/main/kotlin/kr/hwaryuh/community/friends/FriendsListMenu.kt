@@ -1,6 +1,7 @@
-package kr.hwaryuh.community.service
+package kr.hwaryuh.community.friends
 
 import kr.hwaryuh.community.Main
+import kr.hwaryuh.community.profile.PreviousMenuType
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -13,7 +14,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 import java.util.UUID
 
-class FriendsList(private val plugin: Main) : Listener {
+class FriendsListMenu(private val plugin: Main) : Listener {
 
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
@@ -33,13 +34,15 @@ class FriendsList(private val plugin: Main) : Listener {
             val clickedItem = event.currentItem ?: return
             if (clickedItem.type == Material.PLAYER_HEAD) {
                 val meta = clickedItem.itemMeta as? SkullMeta ?: return
-                val clickedPlayerName = meta.owningPlayer?.name ?: return
-                val clickedPlayer = Bukkit.getPlayer(clickedPlayerName)
+                val friendUUID = meta.owningPlayer?.uniqueId ?: return
+                val viewer = event.whoClicked as Player
 
-                if (clickedPlayer != null && clickedPlayer.isOnline) {
-                    plugin.openProfileMenu(event.whoClicked as Player, clickedPlayer, true)
+                val onlineFriend = Bukkit.getPlayer(friendUUID)
+                if (onlineFriend != null && onlineFriend.isOnline) {
+                    plugin.openProfileMenu(viewer, onlineFriend, true, PreviousMenuType.FRIENDS)
                 } else {
-                    openFriendRemovalGUI(event.whoClicked as Player, UUID.fromString(meta.owningPlayer?.uniqueId.toString()))
+                    val offlineFriend = Bukkit.getOfflinePlayer(friendUUID)
+                    plugin.openOfflineProfileMenu(viewer, offlineFriend, true, PreviousMenuType.FRIENDS)
                 }
             }
         }
@@ -66,20 +69,6 @@ class FriendsList(private val plugin: Main) : Listener {
     fun open(player: Player) {
         val inventory = Bukkit.createInventory(FriendListHolder(), 54, "친구 목록")
         updateInventory(inventory, player)
-        player.openInventory(inventory)
-    }
-
-    private fun openFriendRemovalGUI(player: Player, friendUUID: UUID) {
-        val inventory = Bukkit.createInventory(FriendRemovalHolder(friendUUID), 54, "친구 삭제")
-        val friendHead = playerHead(friendUUID)
-        inventory.setItem(22, friendHead)
-
-        val removeFriend = ItemStack(Material.GHAST_TEAR)
-        val meta = removeFriend.itemMeta
-        meta?.setDisplayName("친구 삭제")
-        removeFriend.itemMeta = meta
-        inventory.setItem(53, removeFriend)
-
         player.openInventory(inventory)
     }
 

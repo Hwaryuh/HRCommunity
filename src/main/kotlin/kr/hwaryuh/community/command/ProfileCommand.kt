@@ -1,6 +1,7 @@
 package kr.hwaryuh.community.command
 
 import kr.hwaryuh.community.Main
+import kr.hwaryuh.community.profile.PreviousMenuType
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -16,7 +17,7 @@ class ProfileCommand(private val plugin: Main) : CommandExecutor {
         }
 
         if (args.isEmpty()) {
-            plugin.openProfileMenu(sender, sender, false)
+            plugin.openProfileMenu(sender, sender, false, PreviousMenuType.NONE)
             return true
         }
 
@@ -28,7 +29,7 @@ class ProfileCommand(private val plugin: Main) : CommandExecutor {
             return true
         }
 
-        plugin.openProfileMenu(sender, targetPlayer, false)
+        plugin.openProfileMenu(sender, targetPlayer, false, PreviousMenuType.NONE)
         return true
     }
 }

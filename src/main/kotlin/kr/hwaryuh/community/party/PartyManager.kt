@@ -1,7 +1,6 @@
 package kr.hwaryuh.community.party
 
 import kr.hwaryuh.community.Main
-import kr.hwaryuh.community.service.PartyMenu
 import net.Indyuce.mmocore.MMOCore
 import net.Indyuce.mmocore.api.player.PlayerData
 import net.Indyuce.mmocore.party.provided.MMOCorePartyModule
