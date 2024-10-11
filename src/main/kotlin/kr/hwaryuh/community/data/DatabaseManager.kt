@@ -3,20 +3,39 @@ package kr.hwaryuh.community.data
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
+// import java.sql.Connection
+// import java.sql.DriverManager
 import java.util.UUID
 
 class DatabaseManager(private val plugin: JavaPlugin) {
+//    private lateinit var connection: Connection
+
     private val friendsFile: File
     private val friendRequestsFile: File
     private val friendsConfig: YamlConfiguration
     private val friendRequestsConfig: YamlConfiguration
 
     init {
+//        connectToDatabase()
+
         friendsFile = File(plugin.dataFolder, "friends.yml")
         friendRequestsFile = File(plugin.dataFolder, "friend_requests.yml")
         friendsConfig = YamlConfiguration.loadConfiguration(friendsFile)
         friendRequestsConfig = YamlConfiguration.loadConfiguration(friendRequestsFile)
     }
+
+//    private fun connectToDatabase() {
+//        val url = plugin.config.getString("database.url")
+//        val username = plugin.config.getString("database.username")
+//        val password = plugin.config.getString("database.password")
+//
+//        if (url != null && username != null && password != null) {
+//            connection = DriverManager.getConnection(url, username, password)
+//            // 연결 성공 로그 출력
+//        } else {
+//            // 설정이 잘못되었다는 오류 로그 출력
+//        }
+//    }
 
     fun addFriend(playerUUID: UUID, friendUUID: UUID) {
         val playerFriends = friendsConfig.getStringList(playerUUID.toString())
@@ -34,6 +53,11 @@ class DatabaseManager(private val plugin: JavaPlugin) {
 
     fun getFriends(playerUUID: UUID): List<UUID> {
         return friendsConfig.getStringList(playerUUID.toString()).map { UUID.fromString(it) }
+    }
+
+    fun areFriends(playerUUID1: UUID, playerUUID2: UUID): Boolean {
+        val player1Friends = friendsConfig.getStringList(playerUUID1.toString())
+        return player1Friends.contains(playerUUID2.toString())
     }
 
     fun addFriendRequest(senderUUID: UUID, receiverUUID: UUID) {

@@ -1,5 +1,6 @@
 package kr.hwaryuh.community.service
 
+import kr.hwaryuh.community.Main
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -8,13 +9,31 @@ import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import io.lumine.mythic.lib.api.item.NBTItem
 
-class PlayerProfile {
+class PlayerProfile(private val plugin: Main) {
 
-    fun createProfileInventory(target: Player): Inventory {
-        val inventory = Bukkit.createInventory(ProfileInventoryHolder(target), 54, "${target.name}의 프로필")
+    fun createProfileInventory(viewer: Player, target: Player, fromMenu: Boolean): Inventory {
+        val inventory = Bukkit.createInventory(ProfileInventoryHolder(target, fromMenu), 54, "${target.name}의 프로필")
 
         setArmorSlots(inventory, target)
         setWeaponSlots(inventory, target)
+
+        if (viewer != target) {
+            if (plugin.databaseManager.areFriends(viewer.uniqueId, target.uniqueId)) {
+                val removeFriendItem = removeFriendButton()
+                inventory.setItem(53, removeFriendItem)
+            } else if (plugin.databaseManager.hasFriendRequest(viewer.uniqueId, target.uniqueId)) {
+                val pendingRequestItem = pendingRequestIcon()
+                inventory.setItem(53, pendingRequestItem)
+            } else {
+                val addFriendItem = addFriendButton()
+                inventory.setItem(53, addFriendItem)
+            }
+        }
+
+        if (fromMenu) {
+            val backButton = backButton()
+            inventory.setItem(45, backButton)
+        }
 
         return inventory
     }
@@ -59,10 +78,42 @@ class PlayerProfile {
         if (!nbtItem.hasType()) return null
         return nbtItem.getString("MMOITEMS_WEAPON_ROLE").takeIf { it.isNotEmpty() }
     }
+
+    private fun removeFriendButton(): ItemStack {
+        val removeFriend = ItemStack(Material.GHAST_TEAR)
+        val meta = removeFriend.itemMeta
+        meta?.setDisplayName("친구 삭제")
+        removeFriend.itemMeta = meta
+        return removeFriend
+    }
+
+    private fun addFriendButton(): ItemStack {
+        val addFriend = ItemStack(Material.EMERALD)
+        val meta = addFriend.itemMeta
+        meta?.setDisplayName("친구 추가")
+        addFriend.itemMeta = meta
+        return addFriend
+    }
+
+    private fun pendingRequestIcon(): ItemStack {
+        val pendingRequest = ItemStack(Material.CLOCK)
+        val meta = pendingRequest.itemMeta
+        meta?.setDisplayName("친구 요청 대기 중")
+        pendingRequest.itemMeta = meta
+        return pendingRequest
+    }
+
+    private fun backButton(): ItemStack {
+        val backButton = ItemStack(Material.ARROW)
+        val meta = backButton.itemMeta
+        meta?.setDisplayName("뒤로 가기")
+        backButton.itemMeta = meta
+        return backButton
+    }
 }
 
-class ProfileInventoryHolder(val target: Player) : InventoryHolder {
+class ProfileInventoryHolder(val target: Player, val fromMenu: Boolean) : InventoryHolder {
     override fun getInventory(): Inventory {
-        throw UnsupportedOperationException("내부 오류: 자체 인벤토리 누락") // ProfileInventoryHolder does not have its own inventory.
+        throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
     }
 }

@@ -16,8 +16,10 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+
     compileOnly("net.Indyuce:MMOItems-API:6.10-SNAPSHOT") // MMOItems 6.9.4 or 6.10
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT") // MMOLib 1.6 or 1.6.2
+    compileOnly("net.Indyuce:MMOCore-API:1.12.1-SNAPSHOT") // MMOCore
 }
 
 val targetJavaVersion = 17

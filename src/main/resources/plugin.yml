@@ -1,7 +1,13 @@
 name: HRCommunity
-version: '1.0-SNAPSHOT'
+version: '0.1-SNAPSHOT'
 main: kr.hwaryuh.community.Main
 api-version: '1.20'
 commands:
+  hcmu:
+
   프로필:
+    aliases: vmfhvlf
   친구:
+    aliases: clsrn
+  파티:
+    aliases: vkxl

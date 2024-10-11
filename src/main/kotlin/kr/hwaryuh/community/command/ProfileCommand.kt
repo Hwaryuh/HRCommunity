@@ -16,7 +16,7 @@ class ProfileCommand(private val plugin: Main) : CommandExecutor {
         }
 
         if (args.isEmpty()) {
-            sender.sendMessage("§6/프로필 [플레이어]")
+            plugin.openProfileMenu(sender, sender, false)
             return true
         }
 
@@ -28,7 +28,7 @@ class ProfileCommand(private val plugin: Main) : CommandExecutor {
             return true
         }
 
-        plugin.openProfileMenu(sender, targetPlayer)
+        plugin.openProfileMenu(sender, targetPlayer, false)
         return true
     }
 }
