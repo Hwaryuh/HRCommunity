@@ -14,10 +14,7 @@ import org.bukkit.entity.Player
 class PartyCommand(private val plugin: Main, private val partyManager: PartyManager, private val inviteManager: PartyInviteManager) : CommandExecutor {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender !is Player) {
-            sender.sendMessage("I hate consoles.")
-            return true
-        }
+        if (sender !is Player) { return true }
 
         val playerData = PlayerData.get(sender)
 

@@ -1,6 +1,5 @@
 package kr.hwaryuh.community.command
 
-import kr.hwaryuh.community.party.PartyManager
 import net.Indyuce.mmocore.api.player.PlayerData
 import net.Indyuce.mmocore.party.provided.Party
 import org.bukkit.command.Command
@@ -8,7 +7,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class PartyTabCompleter(private val partyManager: PartyManager) : TabCompleter {
+class PartyTabCompleter : TabCompleter {
     private val subCommands = listOf("생성", "초대", "수락", "거절", "추방", "나가기")
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {

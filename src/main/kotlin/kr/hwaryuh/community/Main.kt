@@ -3,6 +3,7 @@ package kr.hwaryuh.community
 import kr.hwaryuh.community.command.*
 import kr.hwaryuh.community.data.DatabaseManager
 import kr.hwaryuh.community.friends.FriendsListMenu
+import kr.hwaryuh.community.friends.FriendsManager
 import kr.hwaryuh.community.party.*
 import kr.hwaryuh.community.profile.PlayerProfileListener
 import kr.hwaryuh.community.profile.PreviousMenuType
@@ -16,6 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin
 class Main : JavaPlugin() {
     lateinit var databaseManager: DatabaseManager
     lateinit var playerProfile: PlayerProfile
+    lateinit var friendsManager: FriendsManager
     private lateinit var friendsListMenu: FriendsListMenu
     private lateinit var partyInviteManager: PartyInviteManager
     private lateinit var partyManager: PartyManager
@@ -28,6 +30,7 @@ class Main : JavaPlugin() {
         databaseManager = DatabaseManager(this)
         playerProfile = PlayerProfile(this)
         friendsListMenu = FriendsListMenu(this)
+        friendsManager = FriendsManager(this)
         partyInviteManager = PartyInviteManager(this)
         partyManager = PartyManager(this, partyInviteManager)
         partyMenu = PartyMenu(this, partyManager, partyInviteManager)
@@ -41,11 +44,11 @@ class Main : JavaPlugin() {
 
         getCommand("프로필")?.setExecutor(ProfileCommand(this))
 
-        getCommand("친구")?.setExecutor(FriendCommand(this))
-        getCommand("친구")?.tabCompleter = FriendTabCompleter()
+        getCommand("친구")?.setExecutor(FriendsCommand(this, friendsManager))
+        getCommand("친구")?.tabCompleter = FriendsTabCompleter()
 
         getCommand("파티")?.setExecutor(PartyCommand(this, partyManager, partyInviteManager))
-        getCommand("파티")?.tabCompleter = PartyTabCompleter(partyManager)
+        getCommand("파티")?.tabCompleter = PartyTabCompleter()
 
         getCommand("hcmu")?.setExecutor(this)
         getCommand("hcmu")?.tabCompleter = this
@@ -56,12 +59,12 @@ class Main : JavaPlugin() {
     }
 
     fun openProfileMenu(viewer: Player, target: Player, fromMenu: Boolean, previousMenu: PreviousMenuType) {
-        val inventory = playerProfile.createProfileInventory(viewer, target, fromMenu, previousMenu)
+        val inventory = playerProfile.profileMenu(viewer, target, fromMenu, previousMenu)
         viewer.openInventory(inventory)
     }
 
     fun openOfflineProfileMenu(viewer: Player, target: OfflinePlayer, fromMenu: Boolean, previousMenu: PreviousMenuType) {
-        val inventory = playerProfile.createOfflineProfileInventory(viewer, target, fromMenu, previousMenu)
+        val inventory = playerProfile.offlineProfileMenu(viewer, target, fromMenu, previousMenu)
         viewer.openInventory(inventory)
     }
 

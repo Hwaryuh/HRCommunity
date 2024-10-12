@@ -13,7 +13,7 @@ import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
-class PartyManager(private val plugin: Main, private val partyInviteManager: PartyInviteManager) {
+class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
 
     private val partyMenu = PartyMenu(plugin, this, partyInviteManager)
 

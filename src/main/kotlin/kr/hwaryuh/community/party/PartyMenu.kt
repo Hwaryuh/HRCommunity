@@ -34,7 +34,7 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         val ownerName = party.owner.player.name
 
         val inventory = Bukkit.createInventory(
-            PartyMenuHolder(party, playerData),
+            PartyMenuHolder(party),
             54,
             Component.text("${ownerName}의 파티 ($currentPartySize/$maxPartySize)")
         )
@@ -44,27 +44,27 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
     }
 
     private fun updatePartyMenuItems(inventory: Inventory, party: Party, playerData: PlayerData) {
-        val ownerItem = createPlayerHead(party.owner, isOwner = true)
+        val ownerItem = playerHead(party.owner)
         inventory.setItem(10, ownerItem)
 
         val members = party.members.filter { it != party.owner }
         members.forEachIndexed { index, member ->
             if (index < memberSlots.size - 1) {  // 리더는 없을 수가 없죠 ?
-                val memberItem = createPlayerHead(member, isOwner = false)
+                val memberItem = playerHead(member)
                 inventory.setItem(memberSlots[index + 1], memberItem)
             }
         }
 
         for (slot in memberSlots) {
             if (inventory.getItem(slot) == null) {
-                inventory.setItem(slot, createEmptySlot(party.owner == playerData))
+                inventory.setItem(slot, emptySlot(party.owner == playerData))
             }
         }
 
         inventory.setItem(8, leaveButton())
     }
 
-    private fun createPlayerHead(playerData: PlayerData, isOwner: Boolean): ItemStack {
+    private fun playerHead(playerData: PlayerData): ItemStack {
         val item = ItemStack(Material.PLAYER_HEAD)
         val meta = item.itemMeta as SkullMeta
 
@@ -80,7 +80,7 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         return item
     }
 
-    private fun createEmptySlot(isOwner: Boolean): ItemStack {
+    private fun emptySlot(isOwner: Boolean): ItemStack {
         val item = ItemStack(Material.BLACK_STAINED_GLASS_PANE)
         val meta = item.itemMeta
         if (isOwner) {

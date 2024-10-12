@@ -3,7 +3,7 @@ package kr.hwaryuh.community.party
 import kr.hwaryuh.community.Main
 import net.Indyuce.mmocore.MMOCore
 import net.Indyuce.mmocore.api.player.PlayerData
-import net.Indyuce.mmocore.manager.InventoryManager
+// import net.Indyuce.mmocore.manager.InventoryManager
 import net.Indyuce.mmocore.party.provided.Party
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
@@ -21,7 +21,7 @@ class PartyInviteManager(private val plugin: Main) {
     private val invitations = mutableMapOf<UUID, UUID>()
     private val pendingInvites = mutableMapOf<UUID, BukkitRunnable>()
     private val inviteExpirationTime: Long
-        get() = plugin.config.getLong("party.invite-expiration", 60) * 20
+        get() = plugin.config.getLong("party.invite-expiration", 30) * 20
 
     fun inviteToParty(player: Player, playerData: PlayerData, args: Array<out String>) {
         try {

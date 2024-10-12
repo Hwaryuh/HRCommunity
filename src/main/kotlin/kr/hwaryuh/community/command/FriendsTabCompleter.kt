@@ -6,7 +6,7 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class FriendTabCompleter : TabCompleter {
+class FriendsTabCompleter : TabCompleter {
     private val subCommands = listOf("추가", "수락", "거절", "삭제", "목록", "대기")
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {

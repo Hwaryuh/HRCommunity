@@ -9,11 +9,6 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.event.ClickEvent
-import net.kyori.adventure.text.event.HoverEvent
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextDecoration
 
 class PlayerProfileListener(private val plugin: Main) : Listener {
 
@@ -47,9 +42,9 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
                 clickedSlot == 53 && event.currentItem?.type == Material.GHAST_TEAR -> {
                     event.isCancelled = true
                     if (plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
-                        plugin.databaseManager.removeFriend(player.uniqueId, target.uniqueId)
-                        plugin.databaseManager.removeFriend(target.uniqueId, player.uniqueId)
-                        player.sendMessage("§e${target.name}을(를) 친구 목록에서 삭제했습니다.")
+                        target.name?.let { targetName ->
+                            plugin.friendsManager.deleteFriend(player, arrayOf("삭제", targetName))
+                        }
                         player.closeInventory()
 
                         if (holder.fromMenu) {
@@ -61,37 +56,8 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
                 clickedSlot == 53 && event.currentItem?.type == Material.EMERALD -> {
                     event.isCancelled = true
                     if (!plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
-                        if (plugin.databaseManager.hasFriendRequest(player.uniqueId, target.uniqueId)) {
-                            player.sendMessage("§e이미 ${target.name}에게 친구 요청을 보냈습니다.")
-                        } else {
-                            plugin.databaseManager.addFriendRequest(player.uniqueId, target.uniqueId)
-                            player.sendMessage("§a${target.name}에게 친구 요청을 보냈습니다.")
-
-                            val message = Component.text()
-                                .append(Component.text("${player.name}이(가) 친구 요청을 보냈습니다. "))
-                                .append(
-                                    Component.text("[✔] ")
-                                        .color(NamedTextColor.GREEN).decorate(TextDecoration.BOLD)
-                                        .clickEvent(ClickEvent.runCommand("/친구 수락 ${player.name}"))
-                                        .hoverEvent(
-                                            HoverEvent.showText(
-                                                Component.text("클릭하여 수락").color(NamedTextColor.GREEN)
-                                            )
-                                        )
-                                )
-                                .append(
-                                    Component.text("[X]")
-                                        .color(NamedTextColor.RED).decorate(TextDecoration.BOLD)
-                                        .clickEvent(ClickEvent.runCommand("/친구 거절 ${player.name}"))
-                                        .hoverEvent(
-                                            HoverEvent.showText(
-                                                Component.text("클릭하여 거절").color(NamedTextColor.RED)
-                                            )
-                                        )
-                                )
-                                .build()
-
-                            target.player?.sendMessage(message)
+                        target.name?.let { targetName ->
+                            plugin.friendsManager.addFriend(player, arrayOf("추가", targetName))
                         }
                         player.closeInventory()
                     }

@@ -20,9 +20,8 @@ class FriendsListMenu(private val plugin: Main) : Listener {
     fun onInventoryClick(event: InventoryClickEvent) {
         val inventory = event.inventory
 
-        when (inventory.holder) {
-            is FriendListHolder -> handleFriendListClick(event)
-            is FriendRemovalHolder -> handleFriendRemovalClick(event)
+        if (inventory.holder is FriendListHolder) {
+            handleFriendListClick(event)
         }
     }
 
@@ -52,20 +51,6 @@ class FriendsListMenu(private val plugin: Main) : Listener {
         }
     }
 
-    private fun handleFriendRemovalClick(event: InventoryClickEvent) {
-        event.isCancelled = true
-        val clickedItem = event.currentItem ?: return
-
-        if (clickedItem.type == Material.GHAST_TEAR && event.slot == 53) {
-            val holder = event.inventory.holder as? FriendRemovalHolder ?: return
-            val player = event.whoClicked as Player
-            plugin.databaseManager.removeFriend(player.uniqueId, holder.friendUUID)
-            plugin.databaseManager.removeFriend(holder.friendUUID, player.uniqueId)
-            player.sendMessage("친구가 삭제되었습니다.")
-            open(player)
-        }
-    }
-
     fun open(player: Player) {
         val inventory = Bukkit.createInventory(FriendListHolder(), 54, "친구 목록")
         updateInventory(inventory, player)
@@ -91,17 +76,5 @@ class FriendsListMenu(private val plugin: Main) : Listener {
         meta.setDisplayName(offlinePlayer.name ?: "알 수 없음")
         playerHead.itemMeta = meta
         return playerHead
-    }
-
-    private class FriendListHolder : org.bukkit.inventory.InventoryHolder {
-        override fun getInventory(): Inventory {
-            throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
-        }
-    }
-
-    private class FriendRemovalHolder(val friendUUID: UUID) : org.bukkit.inventory.InventoryHolder {
-        override fun getInventory(): Inventory {
-            throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
-        }
     }
 }

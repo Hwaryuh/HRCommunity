@@ -12,7 +12,7 @@ import org.bukkit.inventory.meta.SkullMeta
 
 class PlayerProfile(private val plugin: Main) {
 
-    fun createProfileInventory(viewer: Player, target: Player, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
+    fun profileMenu(viewer: Player, target: Player, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
         val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, "${target.name}의 프로필")
 
         setArmorSlots(inventory, target)
@@ -39,7 +39,7 @@ class PlayerProfile(private val plugin: Main) {
         return inventory
     }
 
-    fun createOfflineProfileInventory(viewer: Player, target: OfflinePlayer, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
+    fun offlineProfileMenu(viewer: Player, target: OfflinePlayer, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
         val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, "${target.name}의 프로필")
 
         val infoItem = ItemStack(Material.PLAYER_HEAD)
@@ -105,7 +105,6 @@ class PlayerProfile(private val plugin: Main) {
                 "SUB" -> subWeapon = item
             }
         }
-
         return Pair(mainWeapon, subWeapon)
     }
 
