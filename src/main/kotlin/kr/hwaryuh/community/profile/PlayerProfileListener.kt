@@ -30,52 +30,54 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
 
         if (holder is ProfileMenuHolder) {
             val clickedSlot = event.rawSlot
+            event.isCancelled = true
 
-            if (clickedSlot in listOf(0, 8, 9, 17, 18, 27) || clickedSlot >= 54) event.isCancelled = true
-            if (event.isShiftClick && clickedSlot >= 54) event.isCancelled = true
-            if (event.hotbarButton != -1 && clickedSlot < 54) event.isCancelled = true
+            when (clickedSlot) {
+                53 -> handleFriendship(event, holder)
+                45 -> handleBackButton(event, holder)
+            }
+        }
+    }
 
-            val player = event.whoClicked as Player
-            val target = holder.target
+    private fun handleFriendship(event: InventoryClickEvent, holder: ProfileMenuHolder) {
+        val player = event.whoClicked as Player
+        val target = holder.target
 
-            when {
-                clickedSlot == 53 && event.currentItem?.type == Material.GHAST_TEAR -> {
-                    event.isCancelled = true
-                    if (plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
-                        target.name?.let { targetName ->
-                            plugin.friendsManager.deleteFriend(player, arrayOf("삭제", targetName))
-                        }
-                        player.closeInventory()
-
-                        if (holder.fromMenu) {
-                            plugin.openFriendsList(player)
-                        }
+        when (event.currentItem?.type) {
+            Material.GHAST_TEAR -> {
+                if (plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
+                    target.name?.let { targetName ->
+                        plugin.friendsManager.deleteFriend(player, arrayOf("삭제", targetName))
                     }
-                }
-
-                clickedSlot == 53 && event.currentItem?.type == Material.EMERALD -> {
-                    event.isCancelled = true
-                    if (!plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
-                        target.name?.let { targetName ->
-                            plugin.friendsManager.addFriend(player, arrayOf("추가", targetName))
-                        }
-                        player.closeInventory()
-                    }
-                }
-
-                clickedSlot == 45 && event.currentItem?.type == Material.ARROW && holder.fromMenu -> {
-                    event.isCancelled = true
                     player.closeInventory()
-                    when (holder.previousMenu) {
-                        PreviousMenuType.PARTY -> {
-                            val playerData = PlayerData.get(player)
-                            plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, playerData)
-                        }
-
-                        PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
-                        PreviousMenuType.NONE -> {}
+                    if (holder.fromMenu) {
+                        plugin.openFriendsList(player)
                     }
                 }
+            }
+            Material.EMERALD -> {
+                if (!plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
+                    target.name?.let { targetName ->
+                        plugin.friendsManager.addFriend(player, arrayOf("추가", targetName))
+                    }
+                    player.closeInventory()
+                }
+            }
+            else -> {}
+        }
+    }
+
+    private fun handleBackButton(event: InventoryClickEvent, holder: ProfileMenuHolder) {
+        if (event.currentItem?.type == Material.ARROW && holder.fromMenu) {
+            val player = event.whoClicked as Player
+            player.closeInventory()
+            when (holder.previousMenu) {
+                PreviousMenuType.PARTY -> {
+                    val playerData = PlayerData.get(player)
+                    plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, playerData)
+                }
+                PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
+                PreviousMenuType.NONE -> {}
             }
         }
     }
