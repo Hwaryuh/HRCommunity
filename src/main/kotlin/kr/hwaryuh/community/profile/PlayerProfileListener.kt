@@ -50,8 +50,10 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
                         plugin.friendsManager.deleteFriend(player, arrayOf("삭제", targetName))
                     }
                     player.closeInventory()
-                    if (holder.fromMenu) {
-                        plugin.openFriendsList(player)
+                    when (holder.previousMenu) {
+                        PreviousMenuType.PARTY -> plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, PlayerData.get(player))
+                        PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
+                        PreviousMenuType.NONE -> {}
                     }
                 }
             }
@@ -60,7 +62,7 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
                     target.name?.let { targetName ->
                         plugin.friendsManager.addFriend(player, arrayOf("추가", targetName))
                     }
-                    player.closeInventory()
+                    plugin.openProfileMenu(player, target as Player, holder.fromMenu, holder.previousMenu)
                 }
             }
             else -> {}
@@ -72,10 +74,7 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
             val player = event.whoClicked as Player
             player.closeInventory()
             when (holder.previousMenu) {
-                PreviousMenuType.PARTY -> {
-                    val playerData = PlayerData.get(player)
-                    plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, playerData)
-                }
+                PreviousMenuType.PARTY -> plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, PlayerData.get(player))
                 PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
                 PreviousMenuType.NONE -> {}
             }
