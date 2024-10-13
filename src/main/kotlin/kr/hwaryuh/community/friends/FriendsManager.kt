@@ -13,7 +13,7 @@ class FriendsManager(private val plugin: Main) {
 
     fun addFriend(sender: Player, args: Array<out String>) {
         if (args.size < 2) {
-            sender.sendMessage(Component.text("/친구 추가 [플레이어]").color(NamedTextColor.RED))
+            sender.sendMessage(Component.text("잘못된 명령어입니다. /친구 추가 [플레이어]").color(NamedTextColor.RED))
             return
         }
 
@@ -49,7 +49,7 @@ class FriendsManager(private val plugin: Main) {
 
     fun acceptFriend(player: Player, args: Array<out String>) {
         if (args.size < 2) {
-            player.sendMessage(Component.text("/친구 수락 [플레이어]").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("잘못된 명령어입니다. /친구 수락 [플레이어]").color(NamedTextColor.RED))
             return
         }
 
@@ -76,7 +76,7 @@ class FriendsManager(private val plugin: Main) {
 
     fun rejectFriend(player: Player, args: Array<out String>) {
         if (args.size < 2) {
-            player.sendMessage(Component.text("/친구 거절 [플레이어]").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("잘못된 명령어입니다. /친구 거절 [플레이어]").color(NamedTextColor.RED))
             return
         }
 
@@ -101,7 +101,7 @@ class FriendsManager(private val plugin: Main) {
 
     fun deleteFriend(player: Player, args: Array<out String>) {
         if (args.size < 2) {
-            player.sendMessage(Component.text("/친구 삭제 [플레이어]").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("잘못된 명령어입니다. /친구 삭제 [플레이어]").color(NamedTextColor.RED))
             return
         }
 

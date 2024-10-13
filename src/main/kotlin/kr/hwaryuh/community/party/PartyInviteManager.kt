@@ -26,7 +26,7 @@ class PartyInviteManager(private val plugin: Main) {
     fun inviteToParty(player: Player, playerData: PlayerData, args: Array<out String>) {
         try {
             if (args.size < 2) {
-                player.sendMessage(Component.text("/파티 초대 [플레이어]").color(NamedTextColor.RED))
+                player.sendMessage(Component.text("잘못된 명령어입니다. /파티 초대 [플레이어]").color(NamedTextColor.RED))
                 return
             }
 
@@ -55,7 +55,7 @@ class PartyInviteManager(private val plugin: Main) {
 
             val levelDifference = abs(targetPlayerData.level - party.level)
             if (levelDifference > MMOCore.plugin.configManager.maxPartyLevelDifference) {
-                throw IllegalStateException("레벨 차이로 인해 초대할 수 없습니다. (차이: $levelDifference)")
+                throw IllegalStateException("레벨 차이가 너무 커 해당 플레이어를 초대할 수 없습니다. (차이: $levelDifference)")
             }
 
             sendCustomInvite(playerData, targetPlayerData)

@@ -96,7 +96,7 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
     fun kickFromParty(player: Player, playerData: PlayerData, args: Array<out String>) {
         try {
             if (args.size < 2) {
-                throw IllegalArgumentException("/파티 추방 [플레이어]")
+                throw IllegalArgumentException("잘못된 명령어입니다. /파티 추방 [플레이어]")
             }
 
             val party = playerData.party as? Party
