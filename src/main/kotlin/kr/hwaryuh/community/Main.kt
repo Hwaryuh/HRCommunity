@@ -89,14 +89,21 @@ class Main : JavaPlugin() {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (args.isNotEmpty() && args[0].equals("reload", ignoreCase = true)) {
-            reloadConfig()
-            sender.sendMessage("F5...")
-            return true
+            if (!sender.hasPermission("hcmu.reload")) {
+                sender.sendMessage("§c알 수 없는 명령어입니다.")
+                return true
+            } else {
+                reloadConfig()
+                sender.sendMessage("F5...")
+                return true
+            }
         }
         return false
     }
 
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): MutableList<String> {
+        if (sender !is Player || !sender.hasPermission("hcmu.reload")) return mutableListOf()
+
         if (command.name.equals("hcmu", ignoreCase = true)) {
             if (args.size == 1) {
                 return mutableListOf("reload").filter { it.startsWith(args[0], ignoreCase = true) }.toMutableList()

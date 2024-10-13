@@ -14,3 +14,6 @@ commands:
     aliases: clsrn
   파티:
     aliases: vkxl
+permissions:
+  hcmu.reload:
+    default: op
