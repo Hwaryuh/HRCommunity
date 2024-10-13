@@ -1,5 +1,5 @@
 name: HRCommunity
-version: '0.2-SNAPSHOT'
+version: ${version}
 main: kr.hwaryuh.community.Main
 api-version: '1.20'
 author: useemeonascreen

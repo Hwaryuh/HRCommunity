@@ -6,9 +6,10 @@ import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class ProfileCommand(private val plugin: Main) : CommandExecutor {
+class ProfileCommand(private val plugin: Main) : CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) { return true }
@@ -28,5 +29,18 @@ class ProfileCommand(private val plugin: Main) : CommandExecutor {
 
         plugin.openProfileMenu(sender, targetPlayer, false, PreviousMenuType.NONE)
         return true
+    }
+
+    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {
+        if (sender !is Player) return null
+
+        return when {
+            args.size == 1 -> getOnlinePlayers(sender).filter { it.startsWith(args[0], ignoreCase = true) }
+            else -> null
+        }
+    }
+
+    private fun getOnlinePlayers(player: Player): List<String> {
+        return player.world.players.map { it.name }
     }
 }

@@ -11,6 +11,7 @@ import kr.hwaryuh.community.profile.PlayerProfile
 import org.bukkit.OfflinePlayer
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -42,16 +43,22 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(partyMenu, this)
         server.pluginManager.registerEvents(partyInviteMenu, this)
 
-        getCommand("프로필")?.setExecutor(ProfileCommand(this))
-
-        getCommand("친구")?.setExecutor(FriendsCommand(this, friendsManager))
-        getCommand("친구")?.tabCompleter = FriendsTabCompleter()
-
-        getCommand("파티")?.setExecutor(PartyCommand(this, partyManager, partyInviteManager))
-        getCommand("파티")?.tabCompleter = PartyTabCompleter()
-
-        getCommand("hcmu")?.setExecutor(this)
-        getCommand("hcmu")?.tabCompleter = this
+        getCommand("프로필")?.apply {
+            setExecutor(ProfileCommand(this@Main))
+            tabCompleter = ProfileCommand(this@Main)
+        }
+        getCommand("친구")?.apply {
+            setExecutor(FriendsCommand(this@Main, friendsManager))
+            tabCompleter = FriendsCommand(this@Main, friendsManager)
+        }
+        getCommand("파티")?.apply {
+            setExecutor(PartyCommand(this@Main, partyManager, partyInviteManager))
+            tabCompleter = PartyCommand(this@Main, partyManager, partyInviteManager)
+        }
+        getCommand("hcmu")?.apply {
+            setExecutor(this@Main)
+            tabCompleter = this@Main
+        }
     }
 
     override fun onDisable() {
