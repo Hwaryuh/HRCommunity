@@ -2,6 +2,8 @@ package kr.hwaryuh.community.friends
 
 import kr.hwaryuh.community.Main
 import kr.hwaryuh.community.profile.PreviousMenuType
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -73,7 +75,7 @@ class FriendsListMenu(private val plugin: Main) : Listener {
         val meta = playerHead.itemMeta as SkullMeta
         val offlinePlayer = Bukkit.getOfflinePlayer(playerUUID)
         meta.owningPlayer = offlinePlayer
-        meta.setDisplayName(offlinePlayer.name ?: "알 수 없음")
+        meta.displayName(Component.text(offlinePlayer.name ?: "알 수 없음").decoration(TextDecoration.ITALIC, false))
         playerHead.itemMeta = meta
         return playerHead
     }

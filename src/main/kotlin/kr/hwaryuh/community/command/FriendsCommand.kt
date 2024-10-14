@@ -33,7 +33,7 @@ class FriendsCommand(private val plugin: Main, private val friendsManager: Frien
                 else -> sender.sendMessage(Component.text("알 수 없는 명령어입니다.").color(NamedTextColor.RED))
             }
         } catch (e: Exception) {
-            sender.sendMessage(Component.text("친구 관련 작업 중 오류가 발생했습니다: ${e.message}").color(NamedTextColor.RED))
+            sender.sendMessage(Component.text("친구 관련 작업 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
             plugin.logger.warning("친구 관련 작업 중 오류 발생: ${e.message}")
             e.printStackTrace()
         }

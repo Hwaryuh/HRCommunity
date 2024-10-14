@@ -7,6 +7,9 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import io.lumine.mythic.lib.api.item.NBTItem
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.OfflinePlayer
 import org.bukkit.inventory.meta.SkullMeta
 
@@ -46,9 +49,10 @@ class PlayerProfile(private val plugin: Main) {
         val meta = infoItem.itemMeta as SkullMeta
         meta.owningPlayer = target
         meta.setDisplayName("§6${target.name}")
-        val lore = mutableListOf<String>()
-        lore.add("§7상태: §c오프라인")
-        meta.lore = lore
+        val lore = listOf(Component.text("상태: ").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
+            .append(Component.text("오프라인").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)))
+
+        meta.lore(lore)
         infoItem.itemMeta = meta
         inventory.setItem(4, infoItem)
 
@@ -117,7 +121,7 @@ class PlayerProfile(private val plugin: Main) {
     private fun removeFriendButton(): ItemStack {
         val removeFriend = ItemStack(Material.GHAST_TEAR)
         val meta = removeFriend.itemMeta
-        meta?.setDisplayName("친구 삭제")
+        meta?.displayName(Component.text("친구 삭제").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false))
         removeFriend.itemMeta = meta
         return removeFriend
     }
@@ -125,7 +129,7 @@ class PlayerProfile(private val plugin: Main) {
     private fun addFriendButton(): ItemStack {
         val addFriend = ItemStack(Material.EMERALD)
         val meta = addFriend.itemMeta
-        meta?.setDisplayName("친구 추가")
+        meta?.displayName(Component.text("친구 추가").color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false))
         addFriend.itemMeta = meta
         return addFriend
     }
@@ -133,7 +137,7 @@ class PlayerProfile(private val plugin: Main) {
     private fun pendingRequestIcon(): ItemStack {
         val pendingRequest = ItemStack(Material.CLOCK)
         val meta = pendingRequest.itemMeta
-        meta?.setDisplayName("친구 요청 대기 중")
+        meta?.displayName(Component.text("친구 요청 대기 중").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
         pendingRequest.itemMeta = meta
         return pendingRequest
     }
@@ -141,7 +145,7 @@ class PlayerProfile(private val plugin: Main) {
     private fun backButton(): ItemStack {
         val backButton = ItemStack(Material.ARROW)
         val meta = backButton.itemMeta
-        meta?.setDisplayName("뒤로 가기")
+        meta?.displayName(Component.text("뒤로 가기").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
         backButton.itemMeta = meta
         return backButton
     }

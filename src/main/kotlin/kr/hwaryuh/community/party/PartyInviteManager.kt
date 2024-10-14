@@ -121,12 +121,12 @@ class PartyInviteManager(private val plugin: Main) {
 
             party.members.forEach { member ->
                 if (member.isOnline) {
-                    member.player.sendMessage(Component.text("${player.name}이(가) 파티에 참여했습니다.").color(NamedTextColor.GREEN))
+                    member.player.sendMessage(Component.text("${player.name}이(가) 파티에 합류했습니다.").color(NamedTextColor.GREEN))
                 }
             }
 
             party.addMember(playerData)
-            player.sendMessage(Component.text("파티에 참여했습니다.").color(NamedTextColor.GREEN))
+            player.sendMessage(Component.text("파티에 합류했습니다.").color(NamedTextColor.GREEN))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
 
 //            InventoryManager.PARTY_VIEW.newInventory(playerData).open()

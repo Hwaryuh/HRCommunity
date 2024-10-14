@@ -32,7 +32,7 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
                     }
                 }
             } catch (e: Exception) {
-                Bukkit.getLogger().warning("Error in leaveParty for ${playerData.player.name}: ${e.message}")
+                Bukkit.getLogger().warning("Error in leave party for ${playerData.player.name}: ${e.message}")
                 e.printStackTrace()
             }
         }
@@ -46,7 +46,7 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
                 partyMenu.openPartyMenu(player, playerData)
             }
         } catch (e: Exception) {
-            player.sendMessage(Component.text("파티 정보를 표시하는 중 오류가 발생했습니다: ${e.message}").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("파티 정보 표시 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
         }
     }
 
@@ -78,7 +78,7 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
             player.sendMessage(Component.text("새로운 파티를 만들었습니다.").color(NamedTextColor.GREEN))
 //            InventoryManager.PARTY_VIEW.newInventory(playerData).open() /* MMOCore 파티 메뉴 */
         } catch (e: Exception) {
-            player.sendMessage(Component.text("파티 생성 중 오류가 발생했습니다: ${e.message}").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("파티 생성 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
         }
     }
 
@@ -89,7 +89,7 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
 
             leaveParty(playerData, party)
         } catch (e: Exception) {
-            player.sendMessage(Component.text("파티를 떠나는 중 오류가 발생했습니다: ${e.message}").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("파티 떠나기 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
         }
     }
 
@@ -128,7 +128,7 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
                 }
             }
         } catch (e: Exception) {
-            player.sendMessage(Component.text("파티원 추방 중 오류가 발생했습니다: ${e.message}").color(NamedTextColor.RED))
+            player.sendMessage(Component.text("파티원 추방 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
         }
     }
 }

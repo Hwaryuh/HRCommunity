@@ -7,6 +7,7 @@ import net.Indyuce.mmocore.api.player.PlayerData
 import net.Indyuce.mmocore.party.provided.Party
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -44,13 +45,13 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
     }
 
     private fun updatePartyMenuItems(inventory: Inventory, party: Party, playerData: PlayerData) {
-        val ownerItem = playerHead(party.owner)
+        val ownerItem = playerHead(party.owner, party.owner == playerData, party.owner)
         inventory.setItem(10, ownerItem)
 
         val members = party.members.filter { it != party.owner }
         members.forEachIndexed { index, member ->
             if (index < memberSlots.size - 1) {  // 리더는 없을 수가 없죠 ?
-                val memberItem = playerHead(member)
+                val memberItem = playerHead(member, party.owner == playerData, party.owner)
                 inventory.setItem(memberSlots[index + 1], memberItem)
             }
         }
@@ -64,18 +65,25 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         inventory.setItem(8, leaveButton())
     }
 
-    private fun playerHead(playerData: PlayerData): ItemStack {
+    private fun playerHead(playerData: PlayerData, isViewerPartyOwner: Boolean, partyOwner: PlayerData): ItemStack {
         val item = ItemStack(Material.PLAYER_HEAD)
         val meta = item.itemMeta as SkullMeta
 
         meta.owningPlayer = playerData.player
-        meta.displayName(Component.text(playerData.player.name).color(NamedTextColor.YELLOW))
+        meta.displayName(Component.text(playerData.player.name).color(NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false))
 
         val lore = mutableListOf<Component>()
-        lore.add(Component.text("Lv. ${playerData.level} ${playerData.profess.name}").color(NamedTextColor.GRAY))
+        lore.add(Component.text("Lv. ${playerData.level} ${playerData.profess.name}")
+            .color(NamedTextColor.GRAY)
+            .decoration(TextDecoration.ITALIC, false))
+
+        if (isViewerPartyOwner && playerData != partyOwner) {
+            lore.add(Component.text("쉬프트 우클릭으로 플레이어 추방")
+                .color(NamedTextColor.RED)
+                .decoration(TextDecoration.ITALIC, false))
+        }
 
         meta.lore(lore)
-
         item.itemMeta = meta
         return item
     }
@@ -84,9 +92,9 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         val item = ItemStack(Material.BLACK_STAINED_GLASS_PANE)
         val meta = item.itemMeta
         if (isOwner) {
-            meta.displayName(Component.text("플레이어 초대···").color(NamedTextColor.GREEN))
+            meta.displayName(Component.text("플레이어 초대···").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false))
         } else {
-            meta.displayName(Component.text("빈 플레이어···").color(NamedTextColor.GRAY))
+            meta.displayName(Component.text("빈 플레이어···").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
         }
         item.itemMeta = meta
         return item
@@ -95,7 +103,7 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
     private fun leaveButton(): ItemStack {
         val item = ItemStack(Material.RED_WOOL)
         val meta = item.itemMeta
-        meta.displayName(Component.text("파티 나가기").color(NamedTextColor.RED))
+        meta.displayName(Component.text("파티 나가기").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false))
         item.itemMeta = meta
         return item
     }

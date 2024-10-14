@@ -5,6 +5,7 @@ import net.Indyuce.mmocore.api.player.PlayerData
 import net.Indyuce.mmocore.party.provided.Party
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -32,8 +33,8 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
         val endIndex = minOf(startIndex + ITEMS_PER_PAGE, worldPlayers.size)
 
         for (i in startIndex until endIndex) {
-            val inviteePlayer = worldPlayers[i]
-            val playerHead = playerHead(inviteePlayer)
+            val invitePlayer = worldPlayers[i]
+            val playerHead = playerHead(invitePlayer)
             inventory.addItem(playerHead)
         }
 
@@ -65,7 +66,7 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
     private fun backButton(): ItemStack {
         val item = ItemStack(Material.BARRIER)
         val meta = item.itemMeta
-        meta.displayName(Component.text("뒤로가기").color(NamedTextColor.RED))
+        meta.displayName(Component.text("뒤로가기").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
         item.itemMeta = meta
         return item
     }
@@ -73,7 +74,7 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
     private fun navigationButton(text: String, material: Material): ItemStack {
         val item = ItemStack(material)
         val meta = item.itemMeta
-        meta.displayName(Component.text(text).color(NamedTextColor.YELLOW))
+        meta.displayName(Component.text(text).color(NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false))
         item.itemMeta = meta
         return item
     }
@@ -91,9 +92,9 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
                     val clickedItem = event.currentItem
                     if (clickedItem?.type == Material.PLAYER_HEAD) {
                         val skullMeta = clickedItem.itemMeta as? SkullMeta
-                        val inviteePlayer = skullMeta?.owningPlayer?.player
-                        if (inviteePlayer != null) {
-                            partyInviteManager.inviteToParty(player, playerData, arrayOf("초대", inviteePlayer.name))
+                        val invitePlayer = skullMeta?.owningPlayer?.player
+                        if (invitePlayer != null) {
+                            partyInviteManager.inviteToParty(player, playerData, arrayOf("초대", invitePlayer.name))
                             player.closeInventory()
                         }
                     }
