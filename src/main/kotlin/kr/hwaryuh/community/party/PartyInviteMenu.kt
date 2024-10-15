@@ -20,11 +20,8 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
     private val ITEMS_PER_PAGE = 45
 
     fun openInviteMenu(player: Player, party: Party, page: Int = 0) {
-        val inventory = Bukkit.createInventory(
-            PartyInviteHolder(party, page),
-            54,
-            Component.text("누구를 초대할까요?")
-        )
+        val title = plugin.configManager.getMenuTitle("party-invite")
+        val inventory = Bukkit.createInventory(PartyInviteHolder(party, page), 54, title)
 
         val worldPlayers = player.world.players.filter { it != player && it !in party.members.mapNotNull { it.player } }
         val totalPages = (worldPlayers.size - 1) / ITEMS_PER_PAGE + 1
@@ -51,11 +48,11 @@ class PartyInviteMenu(private val plugin: Main, private val partyInviteManager: 
         val meta = item.itemMeta as SkullMeta
 
         meta.owningPlayer = player
-        meta.displayName(Component.text(player.name).color(NamedTextColor.YELLOW))
+        meta.displayName(Component.text(player.name).color(NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false))
 
         val playerData = PlayerData.get(player)
         val lore = mutableListOf<Component>()
-        lore.add(Component.text("Lv. ${playerData.level} ${playerData.profess.name}").color(NamedTextColor.GRAY))
+        lore.add(Component.text("Lv. ${playerData.level} ${playerData.profess.name}").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
 
         meta.lore(lore)
 

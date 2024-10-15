@@ -54,7 +54,8 @@ class FriendsListMenu(private val plugin: Main) : Listener {
     }
 
     fun open(player: Player) {
-        val inventory = Bukkit.createInventory(FriendListHolder(), 54, "친구 목록")
+        val title = plugin.configManager.getMenuTitle("friends-list")
+        val inventory = Bukkit.createInventory(FriendListHolder(), 54, title)
         updateInventory(inventory, player)
         player.openInventory(inventory)
     }

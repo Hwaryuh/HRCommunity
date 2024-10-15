@@ -1,6 +1,7 @@
 package kr.hwaryuh.community
 
 import kr.hwaryuh.community.command.*
+import kr.hwaryuh.community.data.ConfigManager
 import kr.hwaryuh.community.data.DatabaseManager
 import kr.hwaryuh.community.friends.FriendsListMenu
 import kr.hwaryuh.community.friends.FriendsManager
@@ -19,6 +20,7 @@ class Main : JavaPlugin() {
     lateinit var databaseManager: DatabaseManager
     lateinit var playerProfile: PlayerProfile
     lateinit var friendsManager: FriendsManager
+    lateinit var configManager: ConfigManager
     private lateinit var friendsListMenu: FriendsListMenu
     private lateinit var partyInviteManager: PartyInviteManager
     private lateinit var partyManager: PartyManager
@@ -27,6 +29,8 @@ class Main : JavaPlugin() {
 
     override fun onEnable() {
         saveDefaultConfig()
+        configManager = ConfigManager(this)
+        configManager.loadConfig()
 
         databaseManager = DatabaseManager(this)
         playerProfile = PlayerProfile(this)
@@ -94,6 +98,8 @@ class Main : JavaPlugin() {
                 return true
             } else {
                 reloadConfig()
+                databaseManager.reload()
+                configManager.reload()
                 sender.sendMessage("F5...")
                 return true
             }

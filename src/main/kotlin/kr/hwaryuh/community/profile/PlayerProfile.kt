@@ -16,7 +16,9 @@ import org.bukkit.inventory.meta.SkullMeta
 class PlayerProfile(private val plugin: Main) {
 
     fun profileMenu(viewer: Player, target: Player, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
-        val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, "${target.name}의 프로필")
+        val baseTitle = plugin.configManager.getMenuTitle("profile")
+        val title = baseTitle.replace("{player}", target.name)
+        val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, title)
 
         setArmorSlots(inventory, target)
         setWeaponSlots(inventory, target)
@@ -43,12 +45,14 @@ class PlayerProfile(private val plugin: Main) {
     }
 
     fun offlineProfileMenu(viewer: Player, target: OfflinePlayer, fromMenu: Boolean, previousMenu: PreviousMenuType): Inventory {
-        val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, "${target.name}의 프로필")
+        val baseTitle = plugin.configManager.getMenuTitle("profile")
+        val title = baseTitle.replace("{player}", target.name ?: "Unknown")
+        val inventory = Bukkit.createInventory(ProfileMenuHolder(target, fromMenu, previousMenu), 54, title)
 
         val infoItem = ItemStack(Material.PLAYER_HEAD)
         val meta = infoItem.itemMeta as SkullMeta
         meta.owningPlayer = target
-        meta.setDisplayName("§6${target.name}")
+        meta.displayName(Component.text(target.name ?: "Unknown").color(NamedTextColor.GOLD))
         val lore = listOf(Component.text("상태: ").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false)
             .append(Component.text("오프라인").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false)))
 
@@ -76,7 +80,6 @@ class PlayerProfile(private val plugin: Main) {
 
         return inventory
     }
-
 
     private fun setArmorSlots(inventory: Inventory, player: Player) {
         val armorSlots = listOf(0, 9, 18, 27)

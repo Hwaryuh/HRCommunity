@@ -20,8 +20,6 @@ import kotlin.math.abs
 class PartyInviteManager(private val plugin: Main) {
     private val invitations = mutableMapOf<UUID, UUID>()
     private val pendingInvites = mutableMapOf<UUID, BukkitRunnable>()
-    private val inviteExpirationTime: Long
-        get() = plugin.config.getLong("party.invite-expiration", 30) * 20
 
     fun inviteToParty(player: Player, playerData: PlayerData, args: Array<out String>) {
         try {
@@ -97,7 +95,7 @@ class PartyInviteManager(private val plugin: Main) {
             }
         }
 
-        expireTask.runTaskLater(plugin, inviteExpirationTime)
+        expireTask.runTaskLater(plugin, getInviteExpirationTime())
         pendingInvites[target.uniqueId] = expireTask
     }
 
@@ -154,5 +152,9 @@ class PartyInviteManager(private val plugin: Main) {
             pendingInvites[player.uniqueId]?.cancel()
             pendingInvites.remove(player.uniqueId)
         }
+    }
+
+    private fun getInviteExpirationTime(): Long {
+        return plugin.config.getLong("party.invite-expiration", 30) * 20
     }
 }

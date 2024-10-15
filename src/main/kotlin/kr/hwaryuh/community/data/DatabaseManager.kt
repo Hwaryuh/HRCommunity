@@ -8,16 +8,13 @@ import java.io.File
 import java.util.UUID
 
 class DatabaseManager(private val plugin: JavaPlugin) {
-    private val friendsFile: File
-    private val friendRequestsFile: File
-    private val friendsConfig: YamlConfiguration
-    private val friendRequestsConfig: YamlConfiguration
+    private lateinit var friendsFile: File
+    private lateinit var friendRequestsFile: File
+    private lateinit var friendsConfig: YamlConfiguration
+    private lateinit var friendRequestsConfig: YamlConfiguration
 
     init {
-        friendsFile = File(plugin.dataFolder, "friends.yml")
-        friendRequestsFile = File(plugin.dataFolder, "friend_requests.yml")
-        friendsConfig = YamlConfiguration.loadConfiguration(friendsFile)
-        friendRequestsConfig = YamlConfiguration.loadConfiguration(friendRequestsFile)
+        loadConfigs()
     }
 
     @Synchronized
@@ -105,5 +102,16 @@ class DatabaseManager(private val plugin: JavaPlugin) {
             plugin.logger.severe("Failed to save config file: ${file.name}")
             e.printStackTrace()
         }
+    }
+
+    private fun loadConfigs() {
+        friendsFile = File(plugin.dataFolder, "friends.yml")
+        friendRequestsFile = File(plugin.dataFolder, "friend_requests.yml")
+        friendsConfig = YamlConfiguration.loadConfiguration(friendsFile)
+        friendRequestsConfig = YamlConfiguration.loadConfiguration(friendRequestsFile)
+    }
+
+    fun reload() {
+        loadConfigs()
     }
 }

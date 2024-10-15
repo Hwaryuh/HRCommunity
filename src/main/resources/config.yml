@@ -1,9 +1,15 @@
+database:
+  url: "jdbc:mysql://localhost:3306/community_plugin"
+  username: "your_username"
+  password: "your_password"
+
 # 파티 관련 설정
 party:
   # 초대 만료 시간 (초 단위)
   invite-expiration: 30
 
-database:
-  url: "jdbc:mysql://localhost:3306/community_plugin"
-  username: "your_username"
-  password: "your_password"
+menu-titles:
+  friends-list: "친구 목록"
+  party-invite: "누구를 초대할까요?"
+  party-menu: "{owner}의 파티 ({current}/{max})"
+  profile: "{player}의 프로필"

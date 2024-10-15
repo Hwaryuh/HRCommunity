@@ -34,11 +34,13 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         val currentPartySize = party.members.size
         val ownerName = party.owner.player.name
 
-        val inventory = Bukkit.createInventory(
-            PartyMenuHolder(party),
-            54,
-            Component.text("${ownerName}의 파티 ($currentPartySize/$maxPartySize)")
-        )
+        val baseTitle = plugin.configManager.getMenuTitle("party-menu")
+        val title = baseTitle
+            .replace("{owner}", ownerName)
+            .replace("{current}", currentPartySize.toString())
+            .replace("{max}", maxPartySize.toString())
+
+        val inventory = Bukkit.createInventory(PartyMenuHolder(party), 54, title)
 
         updatePartyMenuItems(inventory, party, playerData)
         player.openInventory(inventory)
