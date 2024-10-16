@@ -10,15 +10,12 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 
-class TradeListener(private val plugin: Main) : Listener {
-    private val tradeMenu = TradeMenu(plugin)
-    private val tradeManager = TradeManager(plugin)
+class TradeListener(private val plugin: Main, private val tradeMenu: TradeMenu, private val tradeManager: TradeManager) : Listener {
 
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         val inventory = event.inventory
         val holder = inventory.holder as? TradeInventoryHolder ?: return
-
         val player = event.whoClicked as? Player ?: return
         val clickedSlot = event.rawSlot
 
@@ -54,6 +51,7 @@ class TradeListener(private val plugin: Main) : Listener {
 
     private fun handlePlayerSlotClick(event: InventoryClickEvent, player: Player, clickedSlot: Int, holder: TradeInventoryHolder) {
         val clickedItem = event.currentItem
+
         if (clickedItem != null) {
             event.currentItem = null
             player.inventory.addItem(clickedItem)
@@ -63,6 +61,7 @@ class TradeListener(private val plugin: Main) : Listener {
 
     private fun handleReadyButtonClick(event: InventoryClickEvent, player: Player, holder: TradeInventoryHolder) {
         event.isCancelled = true
+
         if (!isPlayerReady(holder, player)) { tradeMenu.setPlayerReady(holder, player)
             if (tradeMenu.areBothPlayersReady(holder)) {
                 if (!tradeMenu.completeTrade(holder)) tradeMenu.cancelTrade(holder)
@@ -74,6 +73,7 @@ class TradeListener(private val plugin: Main) : Listener {
 
     private fun handlePlayerInventoryClick(event: InventoryClickEvent, player: Player, holder: TradeInventoryHolder) {
         val clickedItem = event.currentItem ?: return
+
         if (tradeMenu.setPlayerItem(holder, player, clickedItem)) {
             event.currentItem = null
         } else {

@@ -24,8 +24,8 @@ class TradeInventoryHolder(val playerA: Player, val playerB: Player) : Inventory
     }
 }
 
-class TradeMenu(private val plugin: Main) {
-    private val tradeManager = TradeManager(plugin)
+class TradeMenu(private val plugin: Main, private val tradeManager: TradeManager) {
+//    private val tradeManager = TradeManager(plugin)
 
     private val leftSlots = listOf(10, 11, 12, 19, 20, 21, 28, 29, 30, 37, 38, 39)
     private val rightSlots = listOf(14, 15, 16, 23, 24, 25, 32, 33, 34, 41, 42, 43)
@@ -40,11 +40,11 @@ class TradeMenu(private val plugin: Main) {
     }
 
     private fun initializeInventory(inventory: Inventory) {
-        inventory.setItem(readyButtonSlot, createReadyButton(false))
-        inventory.setItem(otherReadyButtonSlot, createReadyButton(false))
+        inventory.setItem(readyButtonSlot, readyButton(false))
+        inventory.setItem(otherReadyButtonSlot, readyButton(false))
     }
 
-    private fun createReadyButton(isReady: Boolean): ItemStack {
+    private fun readyButton(isReady: Boolean): ItemStack {
         val button = ItemStack(if (isReady) Material.LIME_WOOL else Material.RED_WOOL)
         val meta = button.itemMeta
         meta.displayName(
@@ -99,12 +99,12 @@ class TradeMenu(private val plugin: Main) {
     fun setPlayerReady(holder: TradeInventoryHolder, player: Player) {
         if (player == holder.playerA) {
             holder.playerAReady = true
-            holder.inventoryA.setItem(readyButtonSlot, createReadyButton(true))
-            holder.inventoryB.setItem(otherReadyButtonSlot, createReadyButton(true))
+            holder.inventoryA.setItem(readyButtonSlot, readyButton(true))
+            holder.inventoryB.setItem(otherReadyButtonSlot, readyButton(true))
         } else {
             holder.playerBReady = true
-            holder.inventoryB.setItem(readyButtonSlot, createReadyButton(true))
-            holder.inventoryA.setItem(otherReadyButtonSlot, createReadyButton(true))
+            holder.inventoryB.setItem(readyButtonSlot, readyButton(true))
+            holder.inventoryA.setItem(otherReadyButtonSlot, readyButton(true))
         }
     }
 

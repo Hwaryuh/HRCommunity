@@ -13,7 +13,12 @@ import java.util.concurrent.ConcurrentHashMap
 class TradeManager(private val plugin: Main) {
     private val tradeRequests = ConcurrentHashMap<UUID, UUID>()
     private val activeTrades = ConcurrentHashMap<UUID, UUID>()
-    private val tradeMenu = TradeMenu(plugin)
+    // private val tradeMenu = TradeMenu(plugin)
+    private lateinit var tradeMenu: TradeMenu
+
+    fun setTradeMenu(tradeMenu: TradeMenu) {
+        this.tradeMenu = tradeMenu
+    }
 
     fun sendTradeRequest(sender: Player, targetName: String) {
         val target = Bukkit.getPlayer(targetName)
