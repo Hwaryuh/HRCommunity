@@ -12,9 +12,16 @@ import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryType
 import org.bukkit.inventory.Inventory
+import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 import java.util.UUID
+
+class FriendListHolder : InventoryHolder {
+    override fun getInventory(): Inventory {
+        throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
+    }
+}
 
 class FriendsListMenu(private val plugin: Main) : Listener {
 

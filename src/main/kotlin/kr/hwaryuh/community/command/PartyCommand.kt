@@ -17,7 +17,7 @@ class PartyCommand(private val plugin: Main, private val partyManager: PartyMana
     private val subCommands = listOf("생성", "초대", "수락", "거절", "추방", "나가기")
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender !is Player) { return true }
+        if (sender !is Player) return true
 
         val playerData = PlayerData.get(sender)
 

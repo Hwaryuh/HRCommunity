@@ -12,7 +12,7 @@ import org.bukkit.entity.Player
 class ProfileCommand(private val plugin: Main) : CommandExecutor, TabCompleter {
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender !is Player) { return true }
+        if (sender !is Player) return true
 
         if (args.isEmpty()) {
             plugin.openProfileMenu(sender, sender, false, PreviousMenuType.NONE)

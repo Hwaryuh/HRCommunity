@@ -11,7 +11,14 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.OfflinePlayer
+import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.meta.SkullMeta
+
+class ProfileMenuHolder(val target: OfflinePlayer, val fromMenu: Boolean, val previousMenu: PreviousMenuType) : InventoryHolder {
+    override fun getInventory(): Inventory {
+        throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
+    }
+}
 
 class PlayerProfile(private val plugin: Main) {
 

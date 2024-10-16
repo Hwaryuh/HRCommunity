@@ -15,8 +15,15 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.Inventory
+import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
+
+class PartyMenuHolder(val party: Party) : InventoryHolder {
+    override fun getInventory(): Inventory {
+        throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
+    }
+}
 
 class PartyMenu(private val plugin: Main, private val partyManager: PartyManager, private val partyInviteManager: PartyInviteManager) : Listener {
 

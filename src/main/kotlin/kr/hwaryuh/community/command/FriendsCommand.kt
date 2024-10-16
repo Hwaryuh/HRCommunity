@@ -15,7 +15,7 @@ class FriendsCommand(private val plugin: Main, private val friendsManager: Frien
     private val subCommands = listOf("추가", "수락", "거절", "삭제", "목록", "대기")
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        if (sender !is Player) { return true }
+        if (sender !is Player) return true
 
         if (args.isEmpty()) {
             friendsManager.showFriendList(sender)
