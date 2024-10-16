@@ -9,6 +9,8 @@ import kr.hwaryuh.community.party.*
 import kr.hwaryuh.community.profile.PlayerProfileListener
 import kr.hwaryuh.community.profile.PreviousMenuType
 import kr.hwaryuh.community.profile.PlayerProfile
+import kr.hwaryuh.community.trade.TradeListener
+import kr.hwaryuh.community.trade.TradeManager
 import org.bukkit.OfflinePlayer
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -20,6 +22,7 @@ class Main : JavaPlugin() {
     lateinit var databaseManager: DatabaseManager
     lateinit var playerProfile: PlayerProfile
     lateinit var friendsManager: FriendsManager
+    lateinit var tradeManager: TradeManager
     lateinit var configManager: ConfigManager
     private lateinit var friendsListMenu: FriendsListMenu
     private lateinit var partyInviteManager: PartyInviteManager
@@ -40,12 +43,14 @@ class Main : JavaPlugin() {
         partyManager = PartyManager(this, partyInviteManager)
         partyMenu = PartyMenu(this, partyManager, partyInviteManager)
         partyInviteMenu = PartyInviteMenu(this, partyInviteManager)
+        tradeManager = TradeManager(this)
 
         server.pluginManager.registerEvents(PlayerProfileListener(this), this)
         server.pluginManager.registerEvents(friendsListMenu, this)
         server.pluginManager.registerEvents(PartyListener(this), this)
         server.pluginManager.registerEvents(partyMenu, this)
         server.pluginManager.registerEvents(partyInviteMenu, this)
+        server.pluginManager.registerEvents(TradeListener(this), this)
 
         getCommand("프로필")?.apply {
             setExecutor(ProfileCommand(this@Main))
@@ -58,6 +63,10 @@ class Main : JavaPlugin() {
         getCommand("파티")?.apply {
             setExecutor(PartyCommand(this@Main, partyManager, partyInviteManager))
             tabCompleter = PartyCommand(this@Main, partyManager, partyInviteManager)
+        }
+        getCommand("교환")?.apply {
+            setExecutor(TradeCommand(this@Main, tradeManager))
+            tabCompleter = TradeCommand(this@Main, tradeManager)
         }
         getCommand("hcmu")?.apply {
             setExecutor(this@Main)
