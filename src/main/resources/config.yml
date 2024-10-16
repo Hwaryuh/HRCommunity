@@ -3,9 +3,7 @@ database:
   username: "your_username"
   password: "your_password"
 
-# 파티 관련 설정
 party:
-  # 초대 만료 시간 (초 단위)
   invite-expiration: 30
 
 menu-titles:

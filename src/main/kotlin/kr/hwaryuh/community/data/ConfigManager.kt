@@ -1,9 +1,8 @@
 package kr.hwaryuh.community.data
 
-import org.bukkit.configuration.file.FileConfiguration
-import org.bukkit.plugin.java.JavaPlugin
+import kr.hwaryuh.community.Main
 
-class ConfigManager(private val plugin: JavaPlugin) {
+class ConfigManager(private val plugin: Main) {
     private val menuTitles = mutableMapOf<String, String>()
 
     fun loadConfig() {

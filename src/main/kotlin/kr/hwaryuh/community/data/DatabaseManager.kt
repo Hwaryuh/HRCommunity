@@ -1,13 +1,13 @@
 package kr.hwaryuh.community.data
 
+import kr.hwaryuh.community.Main
 import org.bukkit.configuration.file.YamlConfiguration
-import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 // import java.sql.Connection
 // import java.sql.DriverManager
 import java.util.UUID
 
-class DatabaseManager(private val plugin: JavaPlugin) {
+class DatabaseManager(private val plugin: Main) {
     private lateinit var friendsFile: File
     private lateinit var friendRequestsFile: File
     private lateinit var friendsConfig: YamlConfiguration
