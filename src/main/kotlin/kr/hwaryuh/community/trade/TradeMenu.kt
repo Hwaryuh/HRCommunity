@@ -18,19 +18,24 @@ class TradeInventoryHolder(val playerA: Player, val playerB: Player) : Inventory
     var playerBReady = false
     var completed = false
     var cancelReason: String? = null
+    var cancelingPlayer: Player? = null
 
     override fun getInventory(): Inventory {
         throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
     }
 }
 
-class TradeMenu(private val plugin: Main, private val tradeManager: TradeManager) {
-//    private val tradeManager = TradeManager(plugin)
+class TradeMenu(private val plugin: Main) {
+    private lateinit var tradeManager: TradeManager
 
     private val leftSlots = listOf(10, 11, 12, 19, 20, 21, 28, 29, 30, 37, 38, 39)
     private val rightSlots = listOf(14, 15, 16, 23, 24, 25, 32, 33, 34, 41, 42, 43)
     private val readyButtonSlot = 47
     private val otherReadyButtonSlot = 51
+
+    fun setTradeManager(manager: TradeManager) {
+        this.tradeManager = manager
+    }
 
     fun createTradeInventory(playerA: Player, playerB: Player): TradeInventoryHolder {
         val holder = TradeInventoryHolder(playerA, playerB)
@@ -64,16 +69,20 @@ class TradeMenu(private val plugin: Main, private val tradeManager: TradeManager
         return leftSlots.mapNotNull { inventory.getItem(it) }
     }
 
-    fun setPlayerItem(holder: TradeInventoryHolder, player: Player, item: ItemStack): Boolean {
-        val inventory = if (player == holder.playerA) holder.inventoryA else holder.inventoryB
-        val emptySlot = leftSlots.firstOrNull { inventory.getItem(it) == null } ?: return false
-        inventory.setItem(emptySlot, item)
-        updateOtherPlayerView(holder, player, emptySlot, item)
-        return true
+    fun getPlayerSlots(holder: TradeInventoryHolder, player: Player): List<Int> {
+        return when {
+            player == holder.playerA && player.openInventory.topInventory == holder.inventoryA -> leftSlots
+            player == holder.playerB && player.openInventory.topInventory == holder.inventoryB -> leftSlots
+            else -> emptyList()
+        }
     }
 
     fun updateOtherPlayerView(holder: TradeInventoryHolder, currentPlayer: Player, currentSlot: Int, item: ItemStack?) {
-        val otherInventory = if (currentPlayer == holder.playerA) holder.inventoryB else holder.inventoryA
+        val (otherPlayer, otherInventory) = when (currentPlayer) {
+            holder.playerA -> holder.playerB to holder.inventoryB
+            holder.playerB -> holder.playerA to holder.inventoryA
+            else -> return
+        }
         val otherSlot = mapSlotToOtherView(currentSlot)
         otherInventory.setItem(otherSlot, item)
     }
@@ -89,7 +98,8 @@ class TradeMenu(private val plugin: Main, private val tradeManager: TradeManager
     }
 
     fun isPlayerSlot(holder: TradeInventoryHolder, player: Player, slot: Int): Boolean {
-        return slot in leftSlots
+        val playerSlots = getPlayerSlots(holder, player)
+        return slot in playerSlots
     }
 
     fun isReadyButtonSlot(slot: Int): Boolean {
@@ -126,7 +136,20 @@ class TradeMenu(private val plugin: Main, private val tradeManager: TradeManager
         player.openInventory(inventory)
     }
 
+    fun getFirstEmptySlot(holder: TradeInventoryHolder, player: Player): Int {
+        val inventory = when {
+            player == holder.playerA && player.openInventory.topInventory == holder.inventoryA -> holder.inventoryA
+            player == holder.playerB && player.openInventory.topInventory == holder.inventoryB -> holder.inventoryB
+            else -> return -1
+        }
+        return leftSlots.firstOrNull { inventory.getItem(it) == null } ?: -1
+    }
+
     fun completeTrade(holder: TradeInventoryHolder): Boolean {
+        if (!::tradeManager.isInitialized) {
+            plugin.logger.severe("TradeManager is not initialized in TradeMenu!")
+            return false
+        }
         val playerAItems = getPlayerItems(holder, holder.playerA)
         val playerBItems = getPlayerItems(holder, holder.playerB)
 

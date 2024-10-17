@@ -33,6 +33,15 @@ class Main : JavaPlugin() {
     private lateinit var partyInviteMenu: PartyInviteMenu
 
     override fun onEnable() {
+        val tradeManager = TradeManager(this)
+        val tradeMenu = TradeMenu(this)
+        val tradeListener = TradeListener(this)
+
+        tradeManager.setTradeMenu(tradeMenu)
+        tradeMenu.setTradeManager(tradeManager)
+        tradeListener.setTradeManager(tradeManager)
+        tradeListener.setTradeMenu(tradeMenu)
+
         saveDefaultConfig()
         configManager = ConfigManager(this)
         configManager.loadConfig()
@@ -45,16 +54,13 @@ class Main : JavaPlugin() {
         partyManager = PartyManager(this, partyInviteManager)
         partyMenu = PartyMenu(this, partyManager, partyInviteManager)
         partyInviteMenu = PartyInviteMenu(this, partyInviteManager)
-        tradeManager = TradeManager(this)
-        tradeMenu = TradeMenu(this, tradeManager)
-        tradeManager.setTradeMenu(tradeMenu)
 
         server.pluginManager.registerEvents(PlayerProfileListener(this), this)
         server.pluginManager.registerEvents(friendsListMenu, this)
         server.pluginManager.registerEvents(PartyListener(this), this)
         server.pluginManager.registerEvents(partyMenu, this)
         server.pluginManager.registerEvents(partyInviteMenu, this)
-        server.pluginManager.registerEvents(TradeListener(this, tradeMenu, tradeManager), this)
+        server.pluginManager.registerEvents(tradeListener, this)
 
         getCommand("프로필")?.apply {
             setExecutor(ProfileCommand(this@Main))

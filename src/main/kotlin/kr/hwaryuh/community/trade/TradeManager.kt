@@ -11,13 +11,14 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 class TradeManager(private val plugin: Main) {
-    private val tradeRequests = ConcurrentHashMap<UUID, UUID>()
-    private val activeTrades = ConcurrentHashMap<UUID, UUID>()
-    // private val tradeMenu = TradeMenu(plugin)
     private lateinit var tradeMenu: TradeMenu
 
-    fun setTradeMenu(tradeMenu: TradeMenu) {
-        this.tradeMenu = tradeMenu
+    private val tradeRequests = ConcurrentHashMap<UUID, UUID>()
+    private val activeTrades = ConcurrentHashMap<UUID, UUID>()
+    private val endingTrades = mutableSetOf<UUID>()
+
+    fun setTradeMenu(menu: TradeMenu) {
+        this.tradeMenu = menu
     }
 
     fun sendTradeRequest(sender: Player, targetName: String) {
@@ -33,7 +34,8 @@ class TradeManager(private val plugin: Main) {
         }
 
         if (isPlayerTrading(sender) || isPlayerTrading(target)) {
-            sender.sendMessage(Component.text("이미 교환 중인 플레이어입니다.").color(NamedTextColor.RED))
+            forceEndAllTrades()
+            sender.sendMessage(Component.text("이전 거래 상태가 제대로 정리되지 않아 모든 거래를 초기화했습니다. 다시 시도해주세요.").color(NamedTextColor.YELLOW))
             return
         }
 
@@ -117,13 +119,28 @@ class TradeManager(private val plugin: Main) {
     }
 
     fun endTrade(player: Player) {
-        val otherPlayerUUID = activeTrades.remove(player.uniqueId)
-        if (otherPlayerUUID != null) {
-            activeTrades.remove(otherPlayerUUID)
+        if (endingTrades.add(player.uniqueId)) {
+            val otherPlayerUUID = activeTrades.remove(player.uniqueId)
+            if (otherPlayerUUID != null) {
+                activeTrades.remove(otherPlayerUUID)
+                tradeRequests.remove(otherPlayerUUID)
+                endingTrades.remove(otherPlayerUUID)
+            }
+            tradeRequests.remove(player.uniqueId)
+
+            plugin.logger.info("Trade ended for ${player.name}. Active trades: ${activeTrades.size}, Trade requests: ${tradeRequests.size}")
+
+            endingTrades.remove(player.uniqueId)
         }
     }
 
-    private fun isPlayerTrading(player: Player): Boolean {
+    fun isPlayerTrading(player: Player): Boolean {
         return activeTrades.containsKey(player.uniqueId)
+    }
+
+    fun forceEndAllTrades() {
+        activeTrades.clear()
+        tradeRequests.clear()
+        plugin.logger.info("All trades forcibly ended. Active trades: ${activeTrades.size}, Trade requests: ${tradeRequests.size}")
     }
 }
