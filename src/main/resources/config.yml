@@ -1,13 +1,33 @@
 database:
   url: "jdbc:mysql://localhost:3306/community_plugin"
-  username: "your_username"
-  password: "your_password"
+  username: "username"
+  password: "password"
 
 party:
   invite-expiration: 30
+
+trade-menu:
+  currency-buttons:
+    - amount: 100000
+      material: GOLD_NUGGET
+      custom-model-data: 10002
+    - amount: 10000
+      material: GOLD_NUGGET
+      custom-model-data: 10001
+    - amount: 1000
+      material: GOLD_NUGGET
+      custom-model-data: 10000
+  ready-button:
+    not-ready:
+      material: GHAST_TEAR
+      custom-model-data: 10000
+    ready:
+      material: GHAST_TEAR
+      custom-model-data: 10001
 
 menu-titles:
   friends-list: "친구 목록"
   party-invite: "누구를 초대할까요?"
   party-menu: "{owner}의 파티 ({current}/{max})"
   profile: "{player}의 프로필"
+  trade-menu: "{balance} {added} {other_added}"

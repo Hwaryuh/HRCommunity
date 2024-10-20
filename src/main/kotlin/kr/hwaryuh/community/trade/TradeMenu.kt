@@ -1,6 +1,7 @@
 package kr.hwaryuh.community.trade
 
 import kr.hwaryuh.community.Main
+import kr.hwaryuh.community.data.CurrencyButtonConfig
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -10,47 +11,155 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
+import java.text.NumberFormat
+import java.util.*
 
-class TradeInventoryHolder(val playerA: Player, val playerB: Player) : InventoryHolder {
-    val inventoryA: Inventory = Bukkit.createInventory(this, 54, "교환: ${playerA.name} | ${playerB.name}")
-    val inventoryB: Inventory = Bukkit.createInventory(this, 54, "교환: ${playerB.name} | ${playerA.name}")
+class TradeMenuHolder(val playerA: Player, val playerB: Player, private val plugin: Main) : InventoryHolder {
+    val inventoryA: Inventory
+    val inventoryB: Inventory
     var playerAReady = false
     var playerBReady = false
     var completed = false
     var cancelReason: String? = null
     var cancelingPlayer: Player? = null
+    var playerACurrency = 0
+    var playerBCurrency = 0
+
+    init {
+        val balanceA = Main.economy.getBalance(playerA).toInt()
+        val balanceB = Main.economy.getBalance(playerB).toInt()
+        val titleFormat = plugin.configManager.getMenuTitle("trade-menu")
+        val initialTitleA = formatTitle(titleFormat, balanceA, 0, 0)
+        val initialTitleB = formatTitle(titleFormat, balanceB, 0, 0)
+
+        inventoryA = Bukkit.createInventory(this, 54, initialTitleA)
+        inventoryB = Bukkit.createInventory(this, 54, initialTitleB)
+    }
 
     override fun getInventory(): Inventory {
         throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
+    }
+
+    fun updateTitle() {
+        val balanceA = Main.economy.getBalance(playerA).toInt()
+        val balanceB = Main.economy.getBalance(playerB).toInt()
+        val titleFormat = plugin.configManager.getMenuTitle("trade-menu")
+
+        val titleA = formatTitle(titleFormat, balanceA, playerACurrency, playerBCurrency)
+        val titleB = formatTitle(titleFormat, balanceB, playerBCurrency, playerACurrency)
+
+        (inventoryA.viewers.firstOrNull() as? Player)?.updateInventoryTitle(inventoryA, titleA)
+        (inventoryB.viewers.firstOrNull() as? Player)?.updateInventoryTitle(inventoryB, titleB)
+    }
+
+    private fun formatTitle(format: String, balance: Int, added: Int, otherAdded: Int): String {
+        return format
+            .replace("{balance}", formatUnicode(balance, 10))
+            .replace("{added}", formatSubscript(added, 8))
+            .replace("{other_added}", formatSubscript(otherAdded, 8))
+    }
+
+    private fun Player.updateInventoryTitle(inventory: Inventory, title: String) {
+        if (inventory == openInventory.topInventory) {
+            openInventory.title = title
+        }
+    }
+
+    private fun formatUnicode(number: Int, width: Int): String {
+        val unicodeDigits = "⓪①②③④⑤⑥⑦⑧⑨"
+        return number.toString()
+            .padStart(width, ' ')
+            .map { char -> if (char in '0'..'9') unicodeDigits[char - '0'] else char }
+            .joinToString("")
+    }
+
+    private fun formatSubscript(number: Int, width: Int): String {
+        val subscriptDigits = "₀₁₂₃₄₅₆₇₈₉"
+        return number.toString()
+            .padStart(width, ' ')
+            .map { char -> if (char in '0'..'9') subscriptDigits[char - '0'] else char }
+            .joinToString("")
     }
 }
 
 class TradeMenu(private val plugin: Main) {
     private lateinit var tradeManager: TradeManager
 
-    private val leftSlots = listOf(10, 11, 12, 19, 20, 21, 28, 29, 30, 37, 38, 39)
-    private val rightSlots = listOf(14, 15, 16, 23, 24, 25, 32, 33, 34, 41, 42, 43)
-    private val readyButtonSlot = 47
-    private val otherReadyButtonSlot = 51
+    private val leftSlots = listOf(19, 20, 21, 28, 29, 30, 37, 38, 39)
+    private val rightSlots = listOf(23, 24, 25, 32, 33, 34, 41, 42, 43)
+    private val readyButtonASlot = 47
+    private val readyButtonBSlot = 51
+    val currencyButtonSlots = listOf(18, 27, 36)
+    val currencyAmounts = listOf(100000, 10000, 1000)
+
+    private fun formatNumber(number: Int): String {
+        return NumberFormat.getNumberInstance(Locale.KOREA).format(number)
+    }
+
+    private fun currencyButton(config: CurrencyButtonConfig): ItemStack {
+        val button = ItemStack(config.material)
+        val meta = button.itemMeta
+        meta.displayName(Component.text("+").append(Component.text(formatNumber(config.amount))).color(NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false))
+        meta.setCustomModelData(config.customModelData)
+        button.itemMeta = meta
+        return button
+    }
+
+    private fun playerHead(player: Player): ItemStack {
+        val head = ItemStack(Material.PLAYER_HEAD)
+        val meta = head.itemMeta as? org.bukkit.inventory.meta.SkullMeta
+        meta?.owningPlayer = player
+        meta?.displayName(Component.text(player.name).color(NamedTextColor.WHITE).decoration(TextDecoration.ITALIC, false))
+        head.itemMeta = meta
+        return head
+    }
 
     fun setTradeManager(manager: TradeManager) {
         this.tradeManager = manager
     }
 
-    fun createTradeInventory(playerA: Player, playerB: Player): TradeInventoryHolder {
-        val holder = TradeInventoryHolder(playerA, playerB)
-        initializeInventory(holder.inventoryA)
-        initializeInventory(holder.inventoryB)
+    fun createTradeMenu(playerA: Player, playerB: Player): TradeMenuHolder {
+        val holder = TradeMenuHolder(playerA, playerB, plugin)
+        initializeInventory(holder.inventoryA, playerA, playerB)
+        initializeInventory(holder.inventoryB, playerB, playerA)
         return holder
     }
 
-    private fun initializeInventory(inventory: Inventory) {
-        inventory.setItem(readyButtonSlot, readyButton(false))
-        inventory.setItem(otherReadyButtonSlot, readyButton(false))
+    private fun initializeInventory(inventory: Inventory, currentPlayer: Player, otherPlayer: Player) {
+        inventory.setItem(readyButtonASlot, readyButton(false))
+        inventory.setItem(readyButtonBSlot, readyButton(false))
+        plugin.configManager.getCurrencyButtons().forEachIndexed { index, buttonConfig ->
+            inventory.setItem(currencyButtonSlots[index], currencyButton(buttonConfig))
+        }
+        inventory.setItem(2, playerHead(currentPlayer))
+        inventory.setItem(6, playerHead(otherPlayer))
+    }
+
+    fun updateCurrencyDisplay(holder: TradeMenuHolder) {
+        holder.updateTitle()
+    }
+
+    fun addCurrency(holder: TradeMenuHolder, player: Player, amount: Int) {
+        val currentBalance = Main.economy.getBalance(player)
+        val currentTradeAmount = if (player == holder.playerA) holder.playerACurrency else holder.playerBCurrency
+
+        if (currentTradeAmount + amount > currentBalance) {
+            player.sendMessage(Component.text("더 이상 추가할 수 없습니다.").color(NamedTextColor.RED))
+            return
+        }
+
+        if (player == holder.playerA) {
+            holder.playerACurrency += amount
+        } else {
+            holder.playerBCurrency += amount
+        }
+        updateCurrencyDisplay(holder)
     }
 
     private fun readyButton(isReady: Boolean): ItemStack {
-        val button = ItemStack(if (isReady) Material.LIME_WOOL else Material.RED_WOOL)
+        val config = plugin.configManager.getReadyButtonConfig()
+        val state = if (isReady) config.ready else config.notReady
+        val button = ItemStack(state.material)
         val meta = button.itemMeta
         meta.displayName(
             if (isReady)
@@ -60,16 +169,17 @@ class TradeMenu(private val plugin: Main) {
             else Component.text("교환 준비")
                 .color(NamedTextColor.GRAY)
                 .decoration(TextDecoration.ITALIC, false))
+        meta.setCustomModelData(state.customModelData)
         button.itemMeta = meta
         return button
     }
 
-    fun getPlayerItems(holder: TradeInventoryHolder, player: Player): List<ItemStack> {
+    fun getPlayerItems(holder: TradeMenuHolder, player: Player): List<ItemStack> {
         val inventory = if (player == holder.playerA) holder.inventoryA else holder.inventoryB
         return leftSlots.mapNotNull { inventory.getItem(it) }
     }
 
-    fun getPlayerSlots(holder: TradeInventoryHolder, player: Player): List<Int> {
+    fun getPlayerSlots(holder: TradeMenuHolder, player: Player): List<Int> {
         return when {
             player == holder.playerA && player.openInventory.topInventory == holder.inventoryA -> leftSlots
             player == holder.playerB && player.openInventory.topInventory == holder.inventoryB -> leftSlots
@@ -77,7 +187,7 @@ class TradeMenu(private val plugin: Main) {
         }
     }
 
-    fun updateOtherPlayerView(holder: TradeInventoryHolder, currentPlayer: Player, currentSlot: Int, item: ItemStack?) {
+    fun updateOtherPlayerView(holder: TradeMenuHolder, currentPlayer: Player, currentSlot: Int, item: ItemStack?) {
         val (otherPlayer, otherInventory) = when (currentPlayer) {
             holder.playerA -> holder.playerB to holder.inventoryB
             holder.playerB -> holder.playerA to holder.inventoryA
@@ -91,38 +201,42 @@ class TradeMenu(private val plugin: Main) {
         return when (slot) {
             in leftSlots -> rightSlots[leftSlots.indexOf(slot)]
             in rightSlots -> leftSlots[rightSlots.indexOf(slot)]
-            readyButtonSlot -> otherReadyButtonSlot
-            otherReadyButtonSlot -> readyButtonSlot
+            readyButtonASlot -> readyButtonBSlot
+            readyButtonBSlot -> readyButtonASlot
             else -> slot
         }
     }
 
-    fun isPlayerSlot(holder: TradeInventoryHolder, player: Player, slot: Int): Boolean {
+    fun isPlayerSlot(holder: TradeMenuHolder, player: Player, slot: Int): Boolean {
         val playerSlots = getPlayerSlots(holder, player)
         return slot in playerSlots
     }
 
     fun isReadyButtonSlot(slot: Int): Boolean {
-        return slot == readyButtonSlot
+        return slot == readyButtonASlot
     }
 
-    fun setPlayerReady(holder: TradeInventoryHolder, player: Player) {
+    fun isPlayerHeadSlot(slot: Int): Boolean {
+        return slot == 2 || slot == 6
+    }
+
+    fun setPlayerReady(holder: TradeMenuHolder, player: Player) {
         if (player == holder.playerA) {
             holder.playerAReady = true
-            holder.inventoryA.setItem(readyButtonSlot, readyButton(true))
-            holder.inventoryB.setItem(otherReadyButtonSlot, readyButton(true))
+            holder.inventoryA.setItem(readyButtonASlot, readyButton(true))
+            holder.inventoryB.setItem(readyButtonBSlot, readyButton(true))
         } else {
             holder.playerBReady = true
-            holder.inventoryB.setItem(readyButtonSlot, readyButton(true))
-            holder.inventoryA.setItem(otherReadyButtonSlot, readyButton(true))
+            holder.inventoryB.setItem(readyButtonASlot, readyButton(true))
+            holder.inventoryA.setItem(readyButtonBSlot, readyButton(true))
         }
     }
 
-    fun areBothPlayersReady(holder: TradeInventoryHolder): Boolean {
+    fun areBothPlayersReady(holder: TradeMenuHolder): Boolean {
         return holder.playerAReady && holder.playerBReady
     }
 
-    fun clearPlayerItems(holder: TradeInventoryHolder, player: Player) {
+    fun clearPlayerItems(holder: TradeMenuHolder, player: Player) {
         val inventory = if (player == holder.playerA) holder.inventoryA else holder.inventoryB
         val otherInventory = if (player == holder.playerA) holder.inventoryB else holder.inventoryA
         leftSlots.forEach {
@@ -131,12 +245,12 @@ class TradeMenu(private val plugin: Main) {
         }
     }
 
-    fun openInventory(player: Player, holder: TradeInventoryHolder) {
+    fun openInventory(player: Player, holder: TradeMenuHolder) {
         val inventory = if (player == holder.playerA) holder.inventoryA else holder.inventoryB
         player.openInventory(inventory)
     }
 
-    fun getFirstEmptySlot(holder: TradeInventoryHolder, player: Player): Int {
+    fun getFirstEmptySlot(holder: TradeMenuHolder, player: Player): Int {
         val inventory = when {
             player == holder.playerA && player.openInventory.topInventory == holder.inventoryA -> holder.inventoryA
             player == holder.playerB && player.openInventory.topInventory == holder.inventoryB -> holder.inventoryB
@@ -145,7 +259,7 @@ class TradeMenu(private val plugin: Main) {
         return leftSlots.firstOrNull { inventory.getItem(it) == null } ?: -1
     }
 
-    fun completeTrade(holder: TradeInventoryHolder): Boolean {
+    fun completeTrade(holder: TradeMenuHolder): Boolean {
         if (!::tradeManager.isInitialized) {
             plugin.logger.severe("TradeManager is not initialized in TradeMenu!")
             return false
@@ -168,6 +282,21 @@ class TradeMenu(private val plugin: Main) {
             return false
         }
 
+        val economyA = Main.economy.getBalance(holder.playerA)
+        val economyB = Main.economy.getBalance(holder.playerB)
+
+        if (economyA < holder.playerACurrency || economyB < holder.playerBCurrency) {
+            holder.playerA.sendMessage(Component.text("한 플레이어의 잔액이 부족해 거래가 취소되었습니다.").color(NamedTextColor.RED))
+            holder.playerB.sendMessage(Component.text("한 플레이어의 잔액이 부족해 거래가 취소되었습니다.").color(NamedTextColor.RED))
+            cancelTrade(holder)
+            return false
+        }
+
+        Main.economy.withdrawPlayer(holder.playerA, holder.playerACurrency.toDouble())
+        Main.economy.depositPlayer(holder.playerB, holder.playerACurrency.toDouble())
+        Main.economy.withdrawPlayer(holder.playerB, holder.playerBCurrency.toDouble())
+        Main.economy.depositPlayer(holder.playerA, holder.playerBCurrency.toDouble())
+
         clearPlayerItems(holder, holder.playerA)
         clearPlayerItems(holder, holder.playerB)
 
@@ -184,8 +313,22 @@ class TradeMenu(private val plugin: Main) {
             holder.playerA.closeInventory()
             holder.playerB.closeInventory()
 
-            holder.playerA.sendMessage(Component.text("교환이 완료되었습니다.").color(NamedTextColor.GREEN))
-            holder.playerB.sendMessage(Component.text("교환이 완료되었습니다.").color(NamedTextColor.GREEN))
+            val messageA = if (holder.playerACurrency > 0 || holder.playerBCurrency > 0) {
+                Component.text("교환이 완료되었습니다. ").color(NamedTextColor.GREEN)
+                    .append(Component.text("(+${formatNumber(holder.playerBCurrency)}, -${formatNumber(holder.playerACurrency)})").color(NamedTextColor.GOLD))
+            } else {
+                Component.text("교환이 완료되었습니다.").color(NamedTextColor.GREEN)
+            }
+
+            val messageB = if (holder.playerACurrency > 0 || holder.playerBCurrency > 0) {
+                Component.text("교환이 완료되었습니다. ").color(NamedTextColor.GREEN)
+                    .append(Component.text("(+${formatNumber(holder.playerACurrency)}, -${formatNumber(holder.playerBCurrency)})").color(NamedTextColor.GOLD))
+            } else {
+                Component.text("교환이 완료되었습니다.").color(NamedTextColor.GREEN)
+            }
+
+            holder.playerA.sendMessage(messageA.color(NamedTextColor.GREEN))
+            holder.playerB.sendMessage(messageB.color(NamedTextColor.GREEN))
         })
         tradeManager.endTrade(holder.playerA)
         tradeManager.endTrade(holder.playerB)
@@ -208,7 +351,7 @@ class TradeMenu(private val plugin: Main) {
         return emptySlots >= requiredSlots
     }
 
-    fun cancelTrade(holder: TradeInventoryHolder) {
+    fun cancelTrade(holder: TradeMenuHolder) {
         returnItems(holder.playerA, holder)
         returnItems(holder.playerB, holder)
 
@@ -218,7 +361,7 @@ class TradeMenu(private val plugin: Main) {
         })
     }
 
-    private fun returnItems(player: Player, holder: TradeInventoryHolder) {
+    private fun returnItems(player: Player, holder: TradeMenuHolder) {
         val items = getPlayerItems(holder, player)
         for (item in items) {
             player.inventory.addItem(item)

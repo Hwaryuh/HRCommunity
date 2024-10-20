@@ -30,7 +30,7 @@ class PartyCommand(private val plugin: Main, private val partyManager: PartyMana
                 args[0] == "거절" -> inviteManager.declineInvitation(sender)
                 args[0] == "추방" -> partyManager.kickFromParty(sender, playerData, args)
                 args[0] in listOf("나가기", "떠나기", "skrkrl") -> partyManager.leaveParty(sender, playerData)
-                else -> sender.sendMessage(Component.text("잘못된 명령어입니다. /파티 <생성 | 초대 | 수락 | 거절 | 추방 | 나가기>").color(NamedTextColor.RED))
+                else -> sender.sendMessage(Component.text("잘못된 명령어입니다. /파티 <생성|초대|수락|거절|추방|나가기>").color(NamedTextColor.RED))
             }
         } catch (e: Exception) {
             sender.sendMessage(Component.text("파티 관련 작업 중 오류 발생: ${e.message}").color(NamedTextColor.RED))

@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 class TradeManager(private val plugin: Main) {
     private lateinit var tradeMenu: TradeMenu
-
     private val tradeRequests = ConcurrentHashMap<UUID, UUID>()
     private val activeTrades = ConcurrentHashMap<UUID, UUID>()
     private val endingTrades = mutableSetOf<UUID>()
@@ -35,7 +34,7 @@ class TradeManager(private val plugin: Main) {
 
         if (isPlayerTrading(sender) || isPlayerTrading(target)) {
             forceEndAllTrades()
-            sender.sendMessage(Component.text("이전 거래 상태가 제대로 정리되지 않아 모든 거래를 초기화했습니다. 다시 시도해주세요.").color(NamedTextColor.YELLOW))
+            sender.sendMessage(Component.text("이전 거래가 정리되지 않아 모든 거래를 초기화했습니다. 다시 시도해주세요.").color(NamedTextColor.YELLOW))
             return
         }
 
@@ -93,12 +92,9 @@ class TradeManager(private val plugin: Main) {
         activeTrades[player.uniqueId] = sender.uniqueId
         activeTrades[sender.uniqueId] = player.uniqueId
 
-        val holder = tradeMenu.createTradeInventory(sender, player)
+        val holder = tradeMenu.createTradeMenu(sender, player)
         tradeMenu.openInventory(sender, holder)
         tradeMenu.openInventory(player, holder)
-
-        // player.sendMessage(Component.text("교환 요청을 수락했습니다.").color(NamedTextColor.GREEN))
-        // sender.sendMessage(Component.text("${player.name}이(가) 교환 요청을 수락했습니다.").color(NamedTextColor.GREEN))
     }
 
     fun rejectTradeRequest(player: Player, senderName: String) {
@@ -127,9 +123,6 @@ class TradeManager(private val plugin: Main) {
                 endingTrades.remove(otherPlayerUUID)
             }
             tradeRequests.remove(player.uniqueId)
-
-            plugin.logger.info("Trade ended for ${player.name}. Active trades: ${activeTrades.size}, Trade requests: ${tradeRequests.size}")
-
             endingTrades.remove(player.uniqueId)
         }
     }
@@ -141,6 +134,5 @@ class TradeManager(private val plugin: Main) {
     fun forceEndAllTrades() {
         activeTrades.clear()
         tradeRequests.clear()
-        plugin.logger.info("All trades forcibly ended. Active trades: ${activeTrades.size}, Trade requests: ${tradeRequests.size}")
     }
 }

@@ -4,13 +4,15 @@ plugins {
 }
 
 group = "kr.hwaryuh"
-version = "0.3-SNAPSHOT"
+version = "0.8-SNAPSHOT"
 
 repositories {
     mavenCentral()
     maven("https://repo.papermc.io/repository/maven-public/")
     maven("https://oss.sonatype.org/content/groups/public/")
+
     maven("https://nexus.phoenixdevt.fr/repository/maven-public") // MMO API
+    maven("https://jitpack.io") // Vault
 }
 
 dependencies {
@@ -20,6 +22,7 @@ dependencies {
     compileOnly("net.Indyuce:MMOItems-API:6.10-SNAPSHOT") // MMOItems 6.9.4 or 6.10
     compileOnly("io.lumine:MythicLib-dist:1.6.2-SNAPSHOT") // MMOLib 1.6 or 1.6.2
     compileOnly("net.Indyuce:MMOCore-API:1.12.1-SNAPSHOT") // MMOCore
+    compileOnly("com.github.MilkBowl:VaultAPI:1.7.1")
 }
 
 val targetJavaVersion = 17

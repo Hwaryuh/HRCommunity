@@ -1,6 +1,5 @@
 package kr.hwaryuh.community.command
 
-import kr.hwaryuh.community.Main
 import kr.hwaryuh.community.trade.TradeManager
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -11,22 +10,16 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
-class TradeCommand(private val plugin: Main, private val tradeManager: TradeManager) : CommandExecutor, TabCompleter {
+class TradeCommand(private val tradeManager: TradeManager) : CommandExecutor, TabCompleter {
+    private val alias = listOf("교환", "거래", "ryghks", "rjfo")
+
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) return true
 
-        when (label) {
-            "거래" -> {
-                if (args.isEmpty()) {
-                    sender.sendMessage(Component.text("잘못된 명령어입니다. $label <닉네임> 또는 $label <수락/거절> <닉네임>").color(NamedTextColor.RED))
-                    return true
-                }
-            }
-            "교환" -> {
-                if (args.isEmpty()) {
-                    sender.sendMessage(Component.text("잘못된 명령어입니다. $label <닉네임> 또는 $label <수락/거절> <닉네임>").color(NamedTextColor.RED))
-                    return true
-                }
+        if (label == "trade" || label in alias) {
+            if (args.isEmpty()) {
+                sender.sendMessage(Component.text("잘못된 명령어입니다. $label <닉네임> 또는 $label <수락/거절> <닉네임>").color(NamedTextColor.RED))
+                return true
             }
         }
 

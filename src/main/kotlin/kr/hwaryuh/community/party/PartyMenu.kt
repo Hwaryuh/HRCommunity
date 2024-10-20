@@ -25,7 +25,7 @@ class PartyMenuHolder(val party: Party) : InventoryHolder {
     }
 }
 
-class PartyMenu(private val plugin: Main, private val partyManager: PartyManager, private val partyInviteManager: PartyInviteManager) : Listener {
+class PartyMenu(private val plugin: Main, private val partyManager: PartyManager, partyInviteManager: PartyInviteManager) : Listener {
 
     private val memberSlots = listOf(10, 12, 14, 16, 28, 30, 32, 34)
     private val partyInviteMenu = PartyInviteMenu(plugin, partyInviteManager)

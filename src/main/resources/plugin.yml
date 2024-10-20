@@ -8,14 +8,14 @@ depend:
   - MythicLib
 commands:
   hcmu:
-  프로필:
-    aliases: vmfhvlf
-  친구:
-    aliases: clsrn
-  파티:
-    aliases: vkxl
-  교환:
-    aliases: [거래, ryghks, rjfo]
+  profile:
+    aliases: [프로필, vmfhvlf]
+  friends:
+    aliases: [친구, clsrn]
+  party:
+    aliases: [파티, vkxl]
+  trade:
+    aliases: [교환, 거래, ryghks, rjfo]
 permissions:
   hcmu.reload:
     default: op

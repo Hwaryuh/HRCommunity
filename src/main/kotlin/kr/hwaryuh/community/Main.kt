@@ -12,19 +12,24 @@ import kr.hwaryuh.community.profile.PlayerProfile
 import kr.hwaryuh.community.trade.TradeListener
 import kr.hwaryuh.community.trade.TradeManager
 import kr.hwaryuh.community.trade.TradeMenu
+import net.milkbowl.vault.economy.Economy
 import org.bukkit.OfflinePlayer
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
-import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.plugin.RegisteredServiceProvider
 import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
+
+    companion object {
+        lateinit var economy: Economy
+            private set
+    }
+
     lateinit var databaseManager: DatabaseManager
     lateinit var playerProfile: PlayerProfile
     lateinit var friendsManager: FriendsManager
-    lateinit var tradeManager: TradeManager
-    lateinit var tradeMenu: TradeMenu
     lateinit var configManager: ConfigManager
     private lateinit var friendsListMenu: FriendsListMenu
     private lateinit var partyInviteManager: PartyInviteManager
@@ -62,6 +67,12 @@ class Main : JavaPlugin() {
         server.pluginManager.registerEvents(partyInviteMenu, this)
         server.pluginManager.registerEvents(tradeListener, this)
 
+        if (!setupEconomy()) {
+            logger.severe("Vault 플러그인을 찾을 수 없습니다.")
+            server.pluginManager.disablePlugin(this)
+            return
+        }
+
         getCommand("프로필")?.apply {
             setExecutor(ProfileCommand(this@Main))
             tabCompleter = ProfileCommand(this@Main)
@@ -75,8 +86,8 @@ class Main : JavaPlugin() {
             tabCompleter = PartyCommand(this@Main, partyManager, partyInviteManager)
         }
         getCommand("교환")?.apply {
-            setExecutor(TradeCommand(this@Main, tradeManager))
-            tabCompleter = TradeCommand(this@Main, tradeManager)
+            setExecutor(TradeCommand(tradeManager))
+            tabCompleter = TradeCommand(tradeManager)
         }
         getCommand("hcmu")?.apply {
             setExecutor(this@Main)
@@ -108,6 +119,15 @@ class Main : JavaPlugin() {
             PartyInviteMenu::class.java -> partyInviteMenu as T
             else -> null
         }
+    }
+
+    private fun setupEconomy(): Boolean {
+        if (server.pluginManager.getPlugin("Vault") == null) {
+            return false
+        }
+        val rsp: RegisteredServiceProvider<Economy> = server.servicesManager.getRegistration(Economy::class.java) ?: return false
+        economy = rsp.provider
+        return true
     }
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {

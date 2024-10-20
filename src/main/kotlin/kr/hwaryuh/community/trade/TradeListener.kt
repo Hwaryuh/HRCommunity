@@ -10,6 +10,7 @@ import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryDragEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryAction
+import org.bukkit.event.player.PlayerDropItemEvent
 
 class TradeListener(private val plugin: Main) : Listener {
     private lateinit var tradeMenu: TradeMenu
@@ -26,60 +27,66 @@ class TradeListener(private val plugin: Main) : Listener {
     @EventHandler
     fun onInventoryClick(event: InventoryClickEvent) {
         val inventory = event.inventory
-        val holder = inventory.holder as? TradeInventoryHolder ?: return
+        val holder = inventory.holder as? TradeMenuHolder ?: return
         val player = event.whoClicked as? Player ?: return
         val clickedSlot = event.rawSlot
 
+        if (event.action == InventoryAction.DROP_ONE_SLOT || event.action == InventoryAction.DROP_ALL_SLOT) {
+            event.isCancelled = true
+            return
+        }
+
         when {
             clickedSlot in 0 until 54 -> {
+                if (tradeMenu.isPlayerHeadSlot(clickedSlot)) {
+                    event.isCancelled = true
+                    return
+                }
                 if (tradeMenu.isPlayerSlot(holder, player, clickedSlot)) {
                     if (isPlayerReady(holder, player)) {
                         event.isCancelled = true
-                        player.sendMessage(Component.text("준비 상태에서는 아이템을 변경할 수 없습니다.").color(NamedTextColor.RED))
                     } else {
                         when (event.action) {
                             InventoryAction.PICKUP_ALL, InventoryAction.PICKUP_HALF, InventoryAction.PICKUP_ONE, InventoryAction.PICKUP_SOME -> {
-                                // 플레이어가 자신의 교환 슬롯에서 아이템을 가져가는 경우
-                                plugin.server.scheduler.runTask(plugin, Runnable {
-                                    tradeMenu.updateOtherPlayerView(holder, player, clickedSlot, null)
-                                })
+                                event.isCancelled = true
                             }
                             InventoryAction.PLACE_ALL, InventoryAction.PLACE_ONE, InventoryAction.PLACE_SOME -> {
-                                // 플레이어가 자신의 교환 슬롯에 아이템을 놓는 경우
                                 plugin.server.scheduler.runTask(plugin, Runnable {
                                     val updatedItem = event.view.topInventory.getItem(clickedSlot)
                                     tradeMenu.updateOtherPlayerView(holder, player, clickedSlot, updatedItem)
                                 })
                             }
                             InventoryAction.MOVE_TO_OTHER_INVENTORY -> {
-                                // Shift+클릭으로 아이템을 인벤토리로 이동
                                 event.isCancelled = true
-                                val clickedItem = event.currentItem ?: return
-                                player.inventory.addItem(clickedItem)
-                                event.currentItem = null
-                                tradeMenu.updateOtherPlayerView(holder, player, clickedSlot, null)
                             }
                             else -> {}
                         }
                     }
                 } else {
-                    // 상대방의 슬롯이나 다른 슬롯을 클릭한 경우
                     event.isCancelled = true
-                    if (tradeMenu.isReadyButtonSlot(clickedSlot)) {
-                        handleReadyButtonClick(event, player, holder)
+                    when {
+                        tradeMenu.isReadyButtonSlot(clickedSlot) -> {
+                            handleReadyButtonClick(event, player, holder)
+                        }
+                        clickedSlot in tradeMenu.currencyButtonSlots -> {
+                            if (isPlayerReady(holder, player)) { // 의도된 것.
+                            } else {
+                                val amount = tradeMenu.currencyAmounts[tradeMenu.currencyButtonSlots.indexOf(clickedSlot)]
+                                tradeMenu.addCurrency(holder, player, amount)
+                            }
+                        }
                     }
                 }
             }
             clickedSlot >= 54 -> {
-                // 플레이어 인벤토리에서 교환 창으로 Shift+클릭으로 아이템 이동
                 if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
-                    event.isCancelled = true
                     if (isPlayerReady(holder, player)) {
-                        player.sendMessage(Component.text("준비 상태에서는 아이템을 변경할 수 없습니다.").color(NamedTextColor.RED))
+                        event.isCancelled = true
                     } else {
                         val clickedItem = event.currentItem ?: return
                         val emptySlot = tradeMenu.getFirstEmptySlot(holder, player)
                         if (emptySlot != -1) {
+                            event.isCancelled = true
                             val inventoryView = event.view
                             inventoryView.setItem(emptySlot, clickedItem)
                             event.currentItem = null
@@ -99,12 +106,11 @@ class TradeListener(private val plugin: Main) : Listener {
     @EventHandler
     fun onInventoryDrag(event: InventoryDragEvent) {
         val inventory = event.inventory
-        val holder = inventory.holder as? TradeInventoryHolder ?: return
+        val holder = inventory.holder as? TradeMenuHolder ?: return
         val player = event.whoClicked as? Player ?: return
 
         if (isPlayerReady(holder, player)) {
             event.isCancelled = true
-            player.sendMessage(Component.text("준비 상태에서는 아이템을 변경할 수 없습니다.").color(NamedTextColor.RED))
             return
         }
 
@@ -114,7 +120,6 @@ class TradeListener(private val plugin: Main) : Listener {
             return
         }
 
-        // 드래그된 아이템 처리
         event.newItems.forEach { (slot, item) ->
             if (slot in allowedSlots) {
                 tradeMenu.updateOtherPlayerView(holder, player, slot, item)
@@ -122,11 +127,11 @@ class TradeListener(private val plugin: Main) : Listener {
         }
     }
 
-    private fun isPlayerReady(holder: TradeInventoryHolder, player: Player): Boolean {
+    private fun isPlayerReady(holder: TradeMenuHolder, player: Player): Boolean {
         return if (player == holder.playerA) holder.playerAReady else holder.playerBReady
     }
 
-    private fun handleReadyButtonClick(event: InventoryClickEvent, player: Player, holder: TradeInventoryHolder) {
+    private fun handleReadyButtonClick(event: InventoryClickEvent, player: Player, holder: TradeMenuHolder) {
         event.isCancelled = true
 
         if (!isPlayerReady(holder, player)) {
@@ -134,15 +139,13 @@ class TradeListener(private val plugin: Main) : Listener {
             if (tradeMenu.areBothPlayersReady(holder)) {
                 if (!tradeMenu.completeTrade(holder)) tradeMenu.cancelTrade(holder)
             }
-        } else {
-            player.sendMessage(Component.text("이미 준비 상태입니다.").color(NamedTextColor.YELLOW))
         }
     }
 
     @EventHandler
     fun onInventoryClose(event: InventoryCloseEvent) {
         val inventory = event.inventory
-        val holder = inventory.holder as? TradeInventoryHolder ?: return
+        val holder = inventory.holder as? TradeMenuHolder ?: return
 
         if (holder.completed) return
 
@@ -169,5 +172,10 @@ class TradeListener(private val plugin: Main) : Listener {
                 }
             })
         }
+    }
+
+    @EventHandler
+    fun onPlayerDropItem(event: PlayerDropItemEvent) {
+        if (tradeManager.isPlayerTrading(event.player)) event.isCancelled = true
     }
 }
