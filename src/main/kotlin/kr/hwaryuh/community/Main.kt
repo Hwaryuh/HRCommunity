@@ -38,8 +38,14 @@ class Main : JavaPlugin() {
     private lateinit var partyInviteMenu: PartyInviteMenu
 
     override fun onEnable() {
-        val tradeManager = TradeManager(this)
+        saveDefaultConfig()
+        configManager = ConfigManager(this)
+        configManager.loadConfig()
+
+        databaseManager = DatabaseManager(this)
+
         val tradeMenu = TradeMenu(this)
+        val tradeManager = TradeManager(this)
         val tradeListener = TradeListener(this)
 
         tradeManager.setTradeMenu(tradeMenu)
@@ -47,11 +53,6 @@ class Main : JavaPlugin() {
         tradeListener.setTradeManager(tradeManager)
         tradeListener.setTradeMenu(tradeMenu)
 
-        saveDefaultConfig()
-        configManager = ConfigManager(this)
-        configManager.loadConfig()
-
-        databaseManager = DatabaseManager(this)
         playerProfile = PlayerProfile(this)
         friendsListMenu = FriendsListMenu(this)
         friendsManager = FriendsManager(this)

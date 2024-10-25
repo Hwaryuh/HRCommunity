@@ -36,11 +36,15 @@ class ConfigManager(private val plugin: Main) {
 
     private fun loadCurrencyButtons(section: ConfigurationSection?) {
         currencyButtons.clear()
-        section?.getList(".")?.forEach { buttonConfig ->
-            if (buttonConfig is Map<*, *>) {
-                val amount = (buttonConfig["amount"] as? Int) ?: 0
-                val material = Material.valueOf((buttonConfig["material"] as? String)?.uppercase() ?: "GOLD_NUGGET")
-                val customModelData = (buttonConfig["custom-model-data"] as? Int) ?: 0
+        section?.let { buttonSection ->
+            for (key in buttonSection.getKeys(false)) {
+                val buttonConfig = buttonSection.getConfigurationSection(key) ?: continue
+
+                val amount = key.split("_").getOrNull(1)?.toIntOrNull() ?: continue
+
+                val material = Material.valueOf(buttonConfig.getString("material")?.uppercase() ?: "GOLD_NUGGET")
+                val customModelData = buttonConfig.getInt("custom-model-data")
+
                 currencyButtons.add(CurrencyButtonConfig(amount, material, customModelData))
             }
         }

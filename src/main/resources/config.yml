@@ -8,13 +8,13 @@ party:
 
 trade-menu:
   currency-buttons:
-    - amount: 100000
+    amount_100000:
       material: GOLD_NUGGET
       custom-model-data: 10002
-    - amount: 10000
+    amount_10000:
       material: GOLD_NUGGET
       custom-model-data: 10001
-    - amount: 1000
+    amount_1000:
       material: GOLD_NUGGET
       custom-model-data: 10000
   ready-button:

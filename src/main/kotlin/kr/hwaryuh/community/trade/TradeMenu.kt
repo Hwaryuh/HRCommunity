@@ -128,11 +128,18 @@ class TradeMenu(private val plugin: Main) {
     private fun initializeInventory(inventory: Inventory, currentPlayer: Player, otherPlayer: Player) {
         inventory.setItem(readyButtonASlot, readyButton(false))
         inventory.setItem(readyButtonBSlot, readyButton(false))
-        plugin.configManager.getCurrencyButtons().forEachIndexed { index, buttonConfig ->
-            inventory.setItem(currencyButtonSlots[index], currencyButton(buttonConfig))
-        }
+
         inventory.setItem(2, playerHead(currentPlayer))
         inventory.setItem(6, playerHead(otherPlayer))
+
+        val currencyConfigs = plugin.configManager.getCurrencyButtons()
+        currencyConfigs.forEachIndexed { index, config ->
+            if (index < currencyButtonSlots.size) {
+                val slot = currencyButtonSlots[index]
+                val button = currencyButton(config)
+                inventory.setItem(slot, button)
+            }
+        }
     }
 
     fun updateCurrencyDisplay(holder: TradeMenuHolder) {
@@ -144,7 +151,6 @@ class TradeMenu(private val plugin: Main) {
         val currentTradeAmount = if (player == holder.playerA) holder.playerACurrency else holder.playerBCurrency
 
         if (currentTradeAmount + amount > currentBalance) {
-            player.sendMessage(Component.text("더 이상 추가할 수 없습니다.").color(NamedTextColor.RED))
             return
         }
 
