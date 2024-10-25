@@ -51,15 +51,25 @@ class TradeListener(private val plugin: Main) : Listener {
                                 event.isCancelled = true
                             }
                             InventoryAction.PLACE_ALL, InventoryAction.PLACE_ONE, InventoryAction.PLACE_SOME -> {
+                                // +
+                                if (event.view.topInventory.getItem(clickedSlot) != null) {
+                                    event.isCancelled = true
+                                    return
+                                }
                                 plugin.server.scheduler.runTask(plugin, Runnable {
                                     val updatedItem = event.view.topInventory.getItem(clickedSlot)
                                     tradeMenu.updateOtherPlayerView(holder, player, clickedSlot, updatedItem)
                                 })
                             }
+                            InventoryAction.SWAP_WITH_CURSOR -> {
+                                event.isCancelled = true
+                            }
                             InventoryAction.MOVE_TO_OTHER_INVENTORY -> {
                                 event.isCancelled = true
                             }
-                            else -> {}
+                            else -> {
+                                event.isCancelled = true
+                            }
                         }
                     }
                 } else {
@@ -69,7 +79,7 @@ class TradeListener(private val plugin: Main) : Listener {
                             handleReadyButtonClick(event, player, holder)
                         }
                         clickedSlot in tradeMenu.currencyButtonSlots -> {
-                            if (isPlayerReady(holder, player)) { // 의도된 것.
+                            if (isPlayerReady(holder, player)) {
                             } else {
                                 val amount = tradeMenu.currencyAmounts[tradeMenu.currencyButtonSlots.indexOf(clickedSlot)]
                                 tradeMenu.addCurrency(holder, player, amount)
@@ -94,8 +104,6 @@ class TradeListener(private val plugin: Main) : Listener {
                                 val updatedItem = inventoryView.topInventory.getItem(emptySlot)
                                 tradeMenu.updateOtherPlayerView(holder, player, emptySlot, updatedItem)
                             })
-                        } else {
-                            player.sendMessage(Component.text("더 이상 아이템을 교환할 수 없습니다.").color(NamedTextColor.YELLOW))
                         }
                     }
                 }
@@ -115,8 +123,17 @@ class TradeListener(private val plugin: Main) : Listener {
         }
 
         val allowedSlots = tradeMenu.getPlayerSlots(holder, player)
-        if (event.rawSlots.any { it !in allowedSlots && it < 54 }) {
+
+        // +
+        val hasExistingItems = event.rawSlots.any { slot ->
+            slot < 54 && slot in allowedSlots && inventory.getItem(slot) != null
+        }
+
+        if (hasExistingItems || event.rawSlots.any { it !in allowedSlots && it < 54 }) {
             event.isCancelled = true
+            if (hasExistingItems) {
+                player.sendMessage(Component.text("X").color(NamedTextColor.RED))
+            }
             return
         }
 
