@@ -3,6 +3,7 @@ package kr.hwaryuh.community.trade
 import kr.hwaryuh.community.Main
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -51,7 +52,6 @@ class TradeListener(private val plugin: Main) : Listener {
                                 event.isCancelled = true
                             }
                             InventoryAction.PLACE_ALL, InventoryAction.PLACE_ONE, InventoryAction.PLACE_SOME -> {
-                                // +
                                 if (event.view.topInventory.getItem(clickedSlot) != null) {
                                     event.isCancelled = true
                                     return
@@ -77,6 +77,7 @@ class TradeListener(private val plugin: Main) : Listener {
                     when {
                         tradeMenu.isReadyButtonSlot(clickedSlot) -> {
                             handleReadyButtonClick(event, player, holder)
+                            player.playSound(player, Sound.UI_BUTTON_CLICK, 1.0f, 1.0f)
                         }
                         clickedSlot in tradeMenu.currencyButtonSlots -> {
                             if (isPlayerReady(holder, player)) {

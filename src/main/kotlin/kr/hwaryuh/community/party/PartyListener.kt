@@ -8,7 +8,7 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
 
-class PartyListener(private val plugin: Main) : Listener {
+class PartyListener(private val plugin: Main, private val partyManager: PartyManager) : Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     fun onPlayerQuit(event: PlayerQuitEvent) {
@@ -23,7 +23,7 @@ class PartyListener(private val plugin: Main) : Listener {
         val party = playerData.party as? Party
         if (party != null) {
             try {
-                PartyManager.leaveParty(playerData, party, true)
+                partyManager.handleServerQuit(playerData, party)
             } catch (e: Exception) {
                 plugin.logger.warning("Error while removing ${player.name} from party on quit: ${e.message}")
                 e.printStackTrace()

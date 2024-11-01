@@ -17,27 +17,6 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
 
     private val partyMenu = PartyMenu(plugin, this, partyInviteManager)
 
-    companion object {
-        fun leaveParty(playerData: PlayerData, party: Party, isQuit: Boolean = false) {
-            try {
-                party.removeMember(playerData)
-
-                if (!isQuit) {
-                    playerData.player.sendMessage(Component.text("파티를 떠났습니다.").color(NamedTextColor.YELLOW))
-                }
-
-                party.members.forEach { member ->
-                    if (member.isOnline) {
-                        member.player.sendMessage(Component.text("${playerData.player.name}이(가) 파티를 떠났습니다.").color(NamedTextColor.YELLOW))
-                    }
-                }
-            } catch (e: Exception) {
-                Bukkit.getLogger().warning("Error in leave party for ${playerData.player.name}: ${e.message}")
-                e.printStackTrace()
-            }
-        }
-    }
-
     fun showPartyInfo(player: Player, playerData: PlayerData) {
         try {
             if (playerData.party == null) {
@@ -76,9 +55,30 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
                 ?: throw IllegalStateException("파티 생성에 실패했습니다.")
 
             player.sendMessage(Component.text("새로운 파티를 만들었습니다.").color(NamedTextColor.GREEN))
-//            InventoryManager.PARTY_VIEW.newInventory(playerData).open() /* MMOCore 파티 메뉴 */
         } catch (e: Exception) {
             player.sendMessage(Component.text("파티 생성 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
+        }
+    }
+
+    private fun handlePartyLeave(playerData: PlayerData, party: Party, isQuit: Boolean = false) {
+        try {
+            party.removeMember(playerData)
+
+            if (!isQuit) {
+                playerData.player.sendMessage(Component.text("파티를 떠났습니다.").color(NamedTextColor.YELLOW))
+            }
+
+            party.members.forEach { member ->
+                if (member.isOnline) {
+                    member.player.sendMessage(
+                        Component.text("${playerData.player.name}이(가) 파티를 떠났습니다.")
+                            .color(NamedTextColor.YELLOW)
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Bukkit.getLogger().warning("Error in leave party for ${playerData.player.name}: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -87,10 +87,18 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
             val party = playerData.party as? Party
                 ?: throw IllegalStateException("파티에 속해있지 않습니다.")
 
-            leaveParty(playerData, party)
+            handlePartyLeave(playerData, party)
         } catch (e: Exception) {
             player.sendMessage(Component.text("파티 떠나기 중 오류 발생: ${e.message}").color(NamedTextColor.RED))
         }
+    }
+
+    fun handleServerQuit(playerData: PlayerData, party: Party) {
+        handlePartyLeave(playerData, party, true)
+    }
+
+    fun handleLeaveOnMenu(playerData: PlayerData, party: Party) {
+        handlePartyLeave(playerData, party)
     }
 
     fun kickFromParty(player: Player, playerData: PlayerData, args: Array<out String>) {
@@ -115,16 +123,19 @@ class PartyManager(plugin: Main, partyInviteManager: PartyInviteManager) {
             }
 
             if (targetPlayer == player) {
-                throw throw IllegalStateException("자신은 추방할 수 없습니다.")
+                throw IllegalStateException("자신은 추방할 수 없습니다.")
             }
 
-            party.removeMember(targetPlayerData)
+            handlePartyLeave(targetPlayerData, party)
             player.sendMessage(Component.text("${targetPlayer.name}을(를) 파티에서 추방했습니다.").color(NamedTextColor.GREEN))
             targetPlayer.sendMessage(Component.text("파티에서 추방되었습니다.").color(NamedTextColor.RED))
 
             party.members.forEach { member ->
                 if (member.isOnline && member != playerData) {
-                    member.player.sendMessage(Component.text("${targetPlayer.name}이(가) 파티에서 추방되었습니다.").color(NamedTextColor.YELLOW))
+                    member.player.sendMessage(
+                        Component.text("${targetPlayer.name}이(가) 파티에서 추방되었습니다.")
+                            .color(NamedTextColor.YELLOW)
+                    )
                 }
             }
         } catch (e: Exception) {

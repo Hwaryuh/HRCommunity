@@ -63,7 +63,7 @@ class Main : JavaPlugin() {
 
         server.pluginManager.registerEvents(PlayerProfileListener(this), this)
         server.pluginManager.registerEvents(friendsListMenu, this)
-        server.pluginManager.registerEvents(PartyListener(this), this)
+        server.pluginManager.registerEvents(PartyListener(this, partyManager), this)
         server.pluginManager.registerEvents(partyMenu, this)
         server.pluginManager.registerEvents(partyInviteMenu, this)
         server.pluginManager.registerEvents(tradeListener, this)
@@ -74,19 +74,19 @@ class Main : JavaPlugin() {
             return
         }
 
-        getCommand("프로필")?.apply {
+        getCommand("profile")?.apply {
             setExecutor(ProfileCommand(this@Main))
             tabCompleter = ProfileCommand(this@Main)
         }
-        getCommand("친구")?.apply {
+        getCommand("friends")?.apply {
             setExecutor(FriendsCommand(this@Main, friendsManager))
             tabCompleter = FriendsCommand(this@Main, friendsManager)
         }
-        getCommand("파티")?.apply {
+        getCommand("party")?.apply {
             setExecutor(PartyCommand(this@Main, partyManager, partyInviteManager))
             tabCompleter = PartyCommand(this@Main, partyManager, partyInviteManager)
         }
-        getCommand("교환")?.apply {
+        getCommand("trade")?.apply {
             setExecutor(TradeCommand(tradeManager))
             tabCompleter = TradeCommand(tradeManager)
         }
@@ -123,9 +123,8 @@ class Main : JavaPlugin() {
     }
 
     private fun setupEconomy(): Boolean {
-        if (server.pluginManager.getPlugin("Vault") == null) {
-            return false
-        }
+        if (server.pluginManager.getPlugin("Vault") == null) return false
+
         val rsp: RegisteredServiceProvider<Economy> = server.servicesManager.getRegistration(Economy::class.java) ?: return false
         economy = rsp.provider
         return true

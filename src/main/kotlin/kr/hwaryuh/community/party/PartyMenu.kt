@@ -128,7 +128,7 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
             when (event.rawSlot) {
                 8 -> {
                     player.closeInventory()
-                    PartyManager.leaveParty(playerData, holder.party)
+                    partyManager.handleLeaveOnMenu(playerData, holder.party)
                 }
 
                 in memberSlots -> {
