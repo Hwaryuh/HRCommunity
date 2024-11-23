@@ -3,7 +3,6 @@ package kr.hwaryuh.community.party
 import kr.hwaryuh.community.Main
 import net.Indyuce.mmocore.MMOCore
 import net.Indyuce.mmocore.api.player.PlayerData
-// import net.Indyuce.mmocore.manager.InventoryManager
 import net.Indyuce.mmocore.party.provided.Party
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickEvent
@@ -126,8 +125,6 @@ class PartyInviteManager(private val plugin: Main) {
             party.addMember(playerData)
             player.sendMessage(Component.text("파티에 합류했습니다.").color(NamedTextColor.GREEN))
             player.playSound(player.location, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1f, 1f)
-
-//            InventoryManager.PARTY_VIEW.newInventory(playerData).open()
         } catch (e: Exception) {
             player.sendMessage(Component.text(e.message ?: "파티 참여 중 오류가 발생했습니다.").color(NamedTextColor.RED))
         } finally {
