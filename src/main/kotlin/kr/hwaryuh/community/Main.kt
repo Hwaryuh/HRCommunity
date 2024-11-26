@@ -6,13 +6,17 @@ import kr.hwaryuh.community.data.DatabaseManager
 import kr.hwaryuh.community.friends.FriendsListMenu
 import kr.hwaryuh.community.friends.FriendsManager
 import kr.hwaryuh.community.party.*
+import kr.hwaryuh.community.comp.PlaceholderAPIHook
 import kr.hwaryuh.community.profile.PlayerProfileListener
 import kr.hwaryuh.community.profile.PreviousMenuType
 import kr.hwaryuh.community.profile.PlayerProfile
 import kr.hwaryuh.community.trade.TradeListener
 import kr.hwaryuh.community.trade.TradeManager
 import kr.hwaryuh.community.trade.TradeMenu
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.milkbowl.vault.economy.Economy
+import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -47,6 +51,8 @@ class Main : JavaPlugin() {
         initializeManagers()
         registerEvents()
         registerCommands()
+
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) PlaceholderAPIHook().register()
     }
 
     override fun onDisable() {
@@ -61,8 +67,7 @@ class Main : JavaPlugin() {
         databaseManager = DatabaseManager(this)
 
         if (!setupEconomy()) {
-            logger.severe("Vault 플러그인을 찾을 수 없습니다.")
-            server.pluginManager.disablePlugin(this)
+            logger.severe("Vault를 찾을 수 없습니다.")
             return
         }
     }
@@ -81,8 +86,9 @@ class Main : JavaPlugin() {
         friendsListMenu = FriendsListMenu(this)
         friendsManager = FriendsManager(this)
 
-        partyInviteManager = PartyInviteManager(this)
-        partyManager = PartyManager(this, partyInviteManager)
+        partyManager = PartyManager(this)
+        partyInviteManager = PartyInviteManager(this, partyManager)
+        partyManager.setPartyInviteManager(partyInviteManager)
         partyMenu = PartyMenu(this, partyManager, partyInviteManager)
         partyInviteMenu = PartyInviteMenu(this, partyInviteManager)
     }
@@ -158,7 +164,7 @@ class Main : JavaPlugin() {
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (args.isNotEmpty() && args[0].equals("reload", ignoreCase = true)) {
             if (!sender.hasPermission("hcmu.reload")) {
-                sender.sendMessage("§c알 수 없는 명령어입니다.")
+                sender.sendMessage(Component.text("알 수 없는 명령어입니다.").color(NamedTextColor.RED))
                 return true
             }
             reloadConfig()

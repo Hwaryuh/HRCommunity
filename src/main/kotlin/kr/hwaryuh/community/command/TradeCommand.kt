@@ -11,29 +11,25 @@ import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 
 class TradeCommand(private val tradeManager: TradeManager) : CommandExecutor, TabCompleter {
-    private val alias = listOf("교환", "거래", "ryghks", "rjfo")
-
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if (sender !is Player) return true
 
-        if (label == "trade" || label in alias) {
-            if (args.isEmpty()) {
-                sender.sendMessage(Component.text("잘못된 명령어입니다. $label <닉네임> 또는 $label <수락/거절> <닉네임>").color(NamedTextColor.RED))
-                return true
-            }
+        if (args.isEmpty()) {
+            sender.sendMessage(Component.text("잘못된 명령어입니다. /$label <닉네임> 또는 /$label <수락/거절> <닉네임>").color(NamedTextColor.RED))
+            return true
         }
 
         when (args[0]) {
             "수락" -> {
                 if (args.size < 2) {
-                    sender.sendMessage(Component.text("잘못된 명령어입니다. /교환 수락 <닉네임>").color(NamedTextColor.RED))
+                    sender.sendMessage(Component.text("잘못된 명령어입니다. /$label 수락 <닉네임>").color(NamedTextColor.RED))
                     return true
                 }
                 tradeManager.acceptTradeRequest(sender, args[1])
             }
             "거절" -> {
                 if (args.size < 2) {
-                    sender.sendMessage(Component.text("잘못된 명령어입니다. /교환 거절 <닉네임>").color(NamedTextColor.RED))
+                    sender.sendMessage(Component.text("잘못된 명령어입니다. /$label 거절 <닉네임>").color(NamedTextColor.RED))
                     return true
                 }
                 tradeManager.rejectTradeRequest(sender, args[1])

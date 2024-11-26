@@ -1,8 +1,6 @@
 package kr.hwaryuh.community.party
 
 import kr.hwaryuh.community.Main
-import net.Indyuce.mmocore.api.player.PlayerData
-import net.Indyuce.mmocore.party.provided.Party
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -13,17 +11,11 @@ class PartyListener(private val plugin: Main, private val partyManager: PartyMan
     @EventHandler(priority = EventPriority.LOWEST)
     fun onPlayerQuit(event: PlayerQuitEvent) {
         val player = event.player
-        val playerData = PlayerData.get(player)
+        val party = partyManager.getPlayerParty(player)
 
-        if (playerData == null) {
-            plugin.logger.warning("PlayerData is null for ${player.name} on quit. Skipping party cleanup.")
-            return
-        }
-
-        val party = playerData.party as? Party
         if (party != null) {
             try {
-                partyManager.handleServerQuit(playerData, party)
+                partyManager.handleServerQuit(player)
             } catch (e: Exception) {
                 plugin.logger.warning("Error while removing ${player.name} from party on quit: ${e.message}")
                 e.printStackTrace()

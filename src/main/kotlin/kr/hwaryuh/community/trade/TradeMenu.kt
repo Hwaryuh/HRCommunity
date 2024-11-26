@@ -99,7 +99,8 @@ class TradeMenu(private val plugin: Main) {
     private fun currencyButton(config: CurrencyButtonConfig): ItemStack {
         val button = ItemStack(config.material)
         val meta = button.itemMeta
-        meta.displayName(Component.text("+").append(Component.text(formatNumber(config.amount))).color(NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false))
+        meta.displayName(Component.text("+").append(Component.text(formatNumber(config.amount)))
+            .color(NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false))
         meta.setCustomModelData(config.customModelData)
         button.itemMeta = meta
         return button

@@ -2,9 +2,6 @@ package kr.hwaryuh.community.party
 
 import kr.hwaryuh.community.Main
 import kr.hwaryuh.community.profile.PreviousMenuType
-import net.Indyuce.mmocore.MMOCore
-import net.Indyuce.mmocore.api.player.PlayerData
-import net.Indyuce.mmocore.party.provided.Party
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -19,27 +16,26 @@ import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.SkullMeta
 
-class PartyMenuHolder(val party: Party) : InventoryHolder {
+class PartyMenuHolder(val party: MythicPartyBridge) : InventoryHolder {
     override fun getInventory(): Inventory {
         throw UnsupportedOperationException("내부 오류: 자체 메뉴 누락")
     }
 }
 
 class PartyMenu(private val plugin: Main, private val partyManager: PartyManager, partyInviteManager: PartyInviteManager) : Listener {
-
     private val memberSlots = listOf(10, 12, 14, 16, 28, 30, 32, 34)
     private val partyInviteMenu = PartyInviteMenu(plugin, partyInviteManager)
 
-    fun openPartyMenu(player: Player, playerData: PlayerData) {
-        val party = playerData.party as? Party
+    fun openPartyMenu(player: Player) {
+        val party = partyManager.getPlayerParty(player)
         if (party == null) {
             player.sendMessage(Component.text("파티에 속해있지 않습니다.").color(NamedTextColor.RED))
             return
         }
 
-        val maxPartySize = MMOCore.plugin.configManager.maxPartyPlayers
-        val currentPartySize = party.members.size
-        val ownerName = party.owner.player.name
+        val maxPartySize = 8 // 기본 최대 파티원 수
+        val currentPartySize = party.getMemberCount()
+        val ownerName = party.leader.name ?: "알 수 없음"
 
         val baseTitle = plugin.configManager.getMenuTitle("party-menu")
         val title = baseTitle
@@ -49,44 +45,50 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
 
         val inventory = Bukkit.createInventory(PartyMenuHolder(party), 54, title)
 
-        updatePartyMenuItems(inventory, party, playerData)
+        updatePartyMenuItems(inventory, party, player)
         player.openInventory(inventory)
     }
 
-    private fun updatePartyMenuItems(inventory: Inventory, party: Party, playerData: PlayerData) {
-        val ownerItem = playerHead(party.owner, party.owner == playerData, party.owner)
-        inventory.setItem(10, ownerItem)
+    private fun updatePartyMenuItems(inventory: Inventory, party: MythicPartyBridge, viewer: Player) {
+        memberSlots.forEach { slot ->
+            inventory.setItem(slot, null)
+        }
 
-        val members = party.members.filter { it != party.owner }
+        val leader = party.leader.player
+        if (leader != null) {
+            val leaderHead = playerHead(leader, party.isLeader(viewer), leader)
+            inventory.setItem(memberSlots[0], leaderHead)
+        }
+
+        val members = party.players.filter { !party.isLeader(it) }
         members.forEachIndexed { index, member ->
-            if (index < memberSlots.size - 1) {  // 리더는 없을 수가 없죠 ?
-                val memberItem = playerHead(member, party.owner == playerData, party.owner)
-                inventory.setItem(memberSlots[index + 1], memberItem)
+            if (index < memberSlots.size - 1) {  // 리더는 이미 설정했으므로 -1
+                val memberHead = playerHead(member, party.isLeader(viewer), leader)
+                inventory.setItem(memberSlots[index + 1], memberHead)
             }
         }
 
         for (slot in memberSlots) {
             if (inventory.getItem(slot) == null) {
-                inventory.setItem(slot, emptySlot(party.owner == playerData))
+                inventory.setItem(slot, emptySlot(party.isLeader(viewer)))
             }
         }
 
         inventory.setItem(8, leaveButton())
     }
 
-    private fun playerHead(playerData: PlayerData, isViewerPartyOwner: Boolean, partyOwner: PlayerData): ItemStack {
+    private fun playerHead(player: Player, isViewerPartyOwner: Boolean, leader: Player?): ItemStack {
         val item = ItemStack(Material.PLAYER_HEAD)
         val meta = item.itemMeta as SkullMeta
 
-        meta.owningPlayer = playerData.player
-        meta.displayName(Component.text(playerData.player.name).color(NamedTextColor.YELLOW).decoration(TextDecoration.ITALIC, false))
-
-        val lore = mutableListOf<Component>()
-        lore.add(Component.text("Lv. ${playerData.level} ${playerData.profess.name}")
-            .color(NamedTextColor.GRAY)
+        meta.owningPlayer = player
+        meta.displayName(Component.text(player.name)
+            .color(NamedTextColor.YELLOW)
             .decoration(TextDecoration.ITALIC, false))
 
-        if (isViewerPartyOwner && playerData != partyOwner) {
+        val lore = mutableListOf<Component>()
+
+        if (isViewerPartyOwner && leader != player) {
             lore.add(Component.text("쉬프트 우클릭으로 플레이어 추방")
                 .color(NamedTextColor.RED)
                 .decoration(TextDecoration.ITALIC, false))
@@ -101,9 +103,13 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         val item = ItemStack(Material.BLACK_STAINED_GLASS_PANE)
         val meta = item.itemMeta
         if (isOwner) {
-            meta.displayName(Component.text("플레이어 초대···").color(NamedTextColor.GREEN).decoration(TextDecoration.ITALIC, false))
+            meta.displayName(Component.text("플레이어 초대···")
+                .color(NamedTextColor.GREEN)
+                .decoration(TextDecoration.ITALIC, false))
         } else {
-            meta.displayName(Component.text("빈 플레이어···").color(NamedTextColor.GRAY).decoration(TextDecoration.ITALIC, false))
+            meta.displayName(Component.text("빈 플레이어···")
+                .color(NamedTextColor.GRAY)
+                .decoration(TextDecoration.ITALIC, false))
         }
         item.itemMeta = meta
         return item
@@ -112,7 +118,9 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
     private fun leaveButton(): ItemStack {
         val item = ItemStack(Material.RED_WOOL)
         val meta = item.itemMeta
-        meta.displayName(Component.text("파티 나가기").color(NamedTextColor.RED).decoration(TextDecoration.ITALIC, false))
+        meta.displayName(Component.text("파티 나가기")
+            .color(NamedTextColor.RED)
+            .decoration(TextDecoration.ITALIC, false))
         item.itemMeta = meta
         return item
     }
@@ -123,20 +131,20 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
         if (holder is PartyMenuHolder) {
             event.isCancelled = true
             val player = event.whoClicked as? Player ?: return
-            val playerData = PlayerData.get(player)
+            val party = holder.party
 
             when (event.rawSlot) {
                 8 -> {
                     player.closeInventory()
-                    partyManager.handleLeaveOnMenu(playerData, holder.party)
+                    partyManager.handleLeaveOnMenu(player)
                 }
 
                 in memberSlots -> {
                     val clickedItem = event.currentItem
                     when {
                         clickedItem?.type == Material.BLACK_STAINED_GLASS_PANE -> {
-                            if (holder.party.owner == playerData) {
-                                partyInviteMenu.openInviteMenu(player, holder.party)
+                            if (party.isLeader(player)) {
+                                partyInviteMenu.openInviteMenu(player, party)
                             }
                         }
                         clickedItem?.type == Material.PLAYER_HEAD -> {
@@ -146,9 +154,10 @@ class PartyMenu(private val plugin: Main, private val partyManager: PartyManager
                                 if (event.isLeftClick) {
                                     player.closeInventory()
                                     plugin.openProfileMenu(player, targetPlayer, true, PreviousMenuType.PARTY)
-                                } else if (event.isShiftClick && event.isRightClick && holder.party.owner == playerData && targetPlayer != player) {
-                                    partyManager.kickFromParty(player, playerData, arrayOf("추방", targetPlayer.name))
-                                    updatePartyMenuItems(event.inventory, holder.party, playerData)
+                                } else if (event.isShiftClick && event.isRightClick &&
+                                    party.isLeader(player) && targetPlayer != player) {
+                                    partyManager.kickFromParty(player, targetPlayer)
+                                    updatePartyMenuItems(event.inventory, party, player)
                                 }
                             }
                         }

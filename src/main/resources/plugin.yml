@@ -3,11 +3,17 @@ version: ${version}
 main: kr.hwaryuh.community.Main
 api-version: '1.20'
 author: useemeonascreen
-depend:
-  - MMOCore
+
+softdepend:
+  - Vault
   - MythicLib
+  - MMOCore
+  - PlaceholderAPI
+  - MythicDungeons
+
 commands:
-  hcmu:
+  community:
+    aliases: [hcmu]
   profile:
     aliases: [프로필, vmfhvlf]
   friends:
@@ -16,6 +22,7 @@ commands:
     aliases: [파티, vkxl]
   trade:
     aliases: [교환, 거래, ryghks, rjfo]
+
 permissions:
   hcmu.reload:
     default: op

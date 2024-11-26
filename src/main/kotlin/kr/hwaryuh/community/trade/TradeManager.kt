@@ -34,7 +34,7 @@ class TradeManager(private val plugin: Main) {
 
         if (isPlayerTrading(sender) || isPlayerTrading(target)) {
             forceEndAllTrades()
-            sender.sendMessage(Component.text("이전 거래가 정리되지 않아 모든 거래를 초기화했습니다. 다시 시도해주세요.").color(NamedTextColor.YELLOW))
+            sender.sendMessage(Component.text("이전 거래가 정리되지 않아 거래를 초기화했습니다. 다시 시도해주세요.").color(NamedTextColor.YELLOW))
             return
         }
 

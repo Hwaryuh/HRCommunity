@@ -2,7 +2,8 @@ package kr.hwaryuh.community.profile
 
 import kr.hwaryuh.community.Main
 import kr.hwaryuh.community.party.PartyMenu
-import net.Indyuce.mmocore.api.player.PlayerData
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -46,23 +47,27 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
         when (event.currentItem?.type) {
             Material.GHAST_TEAR -> {
                 if (plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
-                    target.name?.let { targetName ->
-                        plugin.friendsManager.deleteFriend(player, arrayOf("삭제", targetName))
-                    }
-                    player.closeInventory()
-                    when (holder.previousMenu) {
-                        PreviousMenuType.PARTY -> plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, PlayerData.get(player))
-                        PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
-                        PreviousMenuType.NONE -> {}
+                    try {
+                        plugin.friendsManager.deleteFriend(player, target.uniqueId)
+                        player.closeInventory()
+                        when (holder.previousMenu) {
+                            PreviousMenuType.PARTY -> plugin.getService(PartyMenu::class.java)?.openPartyMenu(player)
+                            PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
+                            PreviousMenuType.NONE -> {}
+                        }
+                    } catch (e: IllegalStateException) {
+                        player.sendMessage(Component.text(e.message ?: "알 수 없는 오류가 발생했습니다.").color(NamedTextColor.RED))
                     }
                 }
             }
             Material.EMERALD -> {
                 if (!plugin.databaseManager.areFriends(player.uniqueId, target.uniqueId)) {
-                    target.name?.let { targetName ->
-                        plugin.friendsManager.addFriend(player, arrayOf("추가", targetName))
+                    try {
+                        plugin.friendsManager.addFriend(player, target as Player)
+                        plugin.openProfileMenu(player, target, holder.fromMenu, holder.previousMenu)
+                    } catch (e: IllegalStateException) {
+                        player.sendMessage(Component.text(e.message ?: "알 수 없는 오류가 발생했습니다.").color(NamedTextColor.RED))
                     }
-                    plugin.openProfileMenu(player, target as Player, holder.fromMenu, holder.previousMenu)
                 }
             }
             else -> {}
@@ -74,7 +79,7 @@ class PlayerProfileListener(private val plugin: Main) : Listener {
             val player = event.whoClicked as Player
             player.closeInventory()
             when (holder.previousMenu) {
-                PreviousMenuType.PARTY -> plugin.getService(PartyMenu::class.java)?.openPartyMenu(player, PlayerData.get(player))
+                PreviousMenuType.PARTY -> plugin.getService(PartyMenu::class.java)?.openPartyMenu(player)
                 PreviousMenuType.FRIENDS -> plugin.openFriendsList(player)
                 PreviousMenuType.NONE -> {}
             }

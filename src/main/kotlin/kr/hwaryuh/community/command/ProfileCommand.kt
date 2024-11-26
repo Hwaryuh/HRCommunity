@@ -2,6 +2,8 @@ package kr.hwaryuh.community.command
 
 import kr.hwaryuh.community.Main
 import kr.hwaryuh.community.profile.PreviousMenuType
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -19,11 +21,11 @@ class ProfileCommand(private val plugin: Main) : CommandExecutor, TabCompleter {
             return true
         }
 
-        val targetName = args[0]
-        val targetPlayer = Bukkit.getPlayer(targetName)
+        val target = args[0]
+        val targetPlayer = Bukkit.getPlayer(target)
 
         if (targetPlayer == null) {
-            sender.sendMessage("§c${targetName}을(를) 찾을 수 없습니다.")
+            sender.sendMessage(Component.text("${target}을(를) 찾을 수 없습니다").color(NamedTextColor.RED))
             return true
         }
 
